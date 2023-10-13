@@ -15,7 +15,7 @@ export abstract class FileFUSETreeNode implements FUSETreeNode {
 
   isLeaf = true;
 
-  create(name: string, mode: number): Promise<void> {
+  create(): Promise<void> {
     throw FUSEError.notADirectory();
   }
 
@@ -34,7 +34,7 @@ export abstract class DirectoryFUSETreeNode implements FUSETreeNode {
 
   isLeaf = false;
 
-  open(flags: number): Promise<void> {
+  open(): Promise<void> {
     throw FUSEError.notAFile();
   }
 
@@ -42,7 +42,7 @@ export abstract class DirectoryFUSETreeNode implements FUSETreeNode {
     throw FUSEError.notAFile();
   }
 
-  writeAll(b: Buffer): Promise<void> {
+  writeAll(): Promise<void> {
     throw FUSEError.notAFile();
   }
 }

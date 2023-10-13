@@ -17,6 +17,7 @@ export class RootFUSEHandler implements FUSETreeNode {
   }
 
   async getattr(): Promise<Stats> {
+    // @ts-expect-error
     return {
       mtime: new Date(),
       atime: new Date(),

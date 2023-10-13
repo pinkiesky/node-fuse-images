@@ -1,5 +1,5 @@
 import * as fuse from 'node-fuse-bindings';
-import { FUSEError } from '../fuse/FUSEError';
+import { FUSEError } from '../FUSEError';
 
 export interface FileDescriptor {
   fd: number;
