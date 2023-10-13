@@ -52,7 +52,9 @@ export class FSImageMetaStorage implements ImageMetaStorage {
   async getData() {
     if (!this.isCacheHydrated) {
       try {
-        const rawData = await fs.readFile(this.jsonConfigFilePath, { encoding: 'utf-8' });
+        const rawData = await fs.readFile(this.jsonConfigFilePath, {
+          encoding: 'utf-8',
+        });
         const data: ImageMeta[] = JSON.parse(rawData);
 
         this.cache.clear();

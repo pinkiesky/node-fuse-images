@@ -1,9 +1,8 @@
-import { ObjectTreeNode } from "../objectTree";
-import { FUSEError } from "./FUSEError";
-import { IFUSEHandler } from "./IFUSEHandler";
+import { ObjectTreeNode } from '../objectTree';
+import { FUSEError } from './FUSEError';
+import { IFUSEHandler } from './IFUSEHandler';
 
-export interface FUSETreeNode extends ObjectTreeNode, IFUSEHandler {
-}
+export interface FUSETreeNode extends ObjectTreeNode, IFUSEHandler {}
 
 export abstract class FileFUSETreeNode implements FUSETreeNode {
   abstract name: string;

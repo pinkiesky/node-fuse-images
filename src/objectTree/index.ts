@@ -5,7 +5,10 @@ export interface ObjectTreeNode {
   children(): Promise<ObjectTreeNode[]>;
 }
 
-export async function defaultPathResolver<T extends ObjectTreeNode>(rootNode: T, path: string[]): Promise<T | null> {
+export async function defaultPathResolver<T extends ObjectTreeNode>(
+  rootNode: T,
+  path: string[],
+): Promise<T | null> {
   if (path.length === 0) {
     return rootNode;
   }
@@ -15,7 +18,9 @@ export async function defaultPathResolver<T extends ObjectTreeNode>(rootNode: T,
   }
 
   const [next, ...rest] = path;
-  const child = (await rootNode.children()).find((child) => child.name === next);
+  const child = (await rootNode.children()).find(
+    (child) => child.name === next,
+  );
 
   if (!child) {
     return null;

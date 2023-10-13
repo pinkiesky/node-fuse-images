@@ -93,7 +93,12 @@ export class FUSEHandler {
     return fd.fd;
   }
 
-  async read(fd: number, buf: Buffer, len: number, pos: number): Promise<number> {
+  async read(
+    fd: number,
+    buf: Buffer,
+    len: number,
+    pos: number,
+  ): Promise<number> {
     this.logger.info(`read(${fd}, ${len}, ${pos})`);
 
     const fdObject = this.fdStorage.get(fd);
@@ -104,7 +109,12 @@ export class FUSEHandler {
     return fdObject.readToBuffer(buf, len, pos);
   }
 
-  async write(fd: number, buf: Buffer, len: number, pos: number): Promise<number> {
+  async write(
+    fd: number,
+    buf: Buffer,
+    len: number,
+    pos: number,
+  ): Promise<number> {
     this.logger.info(`write(${fd}, ${len}, ${pos})`);
 
     const fdObject = this.fdStorage.get(fd);

@@ -1,4 +1,3 @@
-
 export interface ICache<V> {
   get(key: string): V | null;
   set(key: string, value: V): void;

@@ -6,9 +6,7 @@ export class RootFUSEHandler implements FUSETreeNode {
   name = 'Root Node';
   isLeaf = false;
 
-  constructor(
-    private readonly _children: FUSETreeNode[],
-  ) {}
+  constructor(private readonly _children: FUSETreeNode[]) {}
 
   async children() {
     return this._children;

@@ -21,13 +21,18 @@ import { ImagesFUSEHandler } from './fuse/ImagesFUSEHandler';
 
 var mountPath = process.platform !== 'win32' ? './mnt' : 'M:\\';
 
-const rf = pureimage.registerFont('/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf', 'Ubuntu');
+const rf = pureimage.registerFont(
+  '/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf',
+  'Ubuntu',
+);
 rf.loadSync();
 
 async function main() {
   const metaStorage = new FSImageMetaStorage('./devdata/images.json');
   const binaryStorage = new FSImageBinaryStorage('./devdata/images');
-  const imagesCache = new InMemoryCache<ReturnType<IImageVariant['generate']>>();
+  const imagesCache = new InMemoryCache<
+    ReturnType<IImageVariant['generate']>
+  >();
 
   const rootNode = new RootFUSEHandler([
     new ImageManagerFUSEHandler(metaStorage, binaryStorage),
@@ -39,7 +44,10 @@ async function main() {
   );
 
   const fuseLogger = rootLogger.getLogger('fuse-native');
-  const handleResultWrapper = <T>(promise: Promise<T>, cb: (err: number, result: T) => void) => {
+  const handleResultWrapper = <T>(
+    promise: Promise<T>,
+    cb: (err: number, result: T) => void,
+  ) => {
     promise
       .then((result) => {
         cb(0, result);
@@ -54,7 +62,10 @@ async function main() {
         cb(fuse.EIO, null as T);
       });
   };
-  const handleRWResultWrapper = (promise: Promise<number>, cb: (result: number) => void) => {
+  const handleRWResultWrapper = (
+    promise: Promise<number>,
+    cb: (result: number) => void,
+  ) => {
     promise
       .then((result) => cb(result))
       .catch((err) => {

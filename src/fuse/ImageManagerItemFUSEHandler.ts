@@ -20,9 +20,8 @@ export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
   async getattr(): Promise<Stats> {
     let size = 0;
     try {
-      size = (await (this.readAll())).length;
-    } catch {
-    }
+      size = (await this.readAll()).length;
+    } catch {}
 
     // @ts-expect-error
     return {
@@ -37,8 +36,7 @@ export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
     };
   }
 
-  async open(flags: number): Promise<void> {
-  }
+  async open(flags: number): Promise<void> {}
 
   readAll(): Promise<Buffer> {
     return this.imageBinaryStorage

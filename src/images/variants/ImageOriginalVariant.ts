@@ -1,5 +1,5 @@
-import { Image, ImageBinary } from "../types";
-import { IImageVariant, ImageFormat } from "./types";
+import { Image, ImageBinary } from '../types';
+import { IImageVariant, ImageFormat } from './types';
 import sharp from 'sharp';
 
 export class ImageOriginalVariant implements IImageVariant {

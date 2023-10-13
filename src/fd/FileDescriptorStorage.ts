@@ -1,4 +1,8 @@
-import { FileDescriptor, ReadFileDescriptor, WriteFileDescriptor } from "./FileDescriptor";
+import {
+  FileDescriptor,
+  ReadFileDescriptor,
+  WriteFileDescriptor,
+} from './FileDescriptor';
 
 export interface FileDescriptorStorage {
   openRO(b: Buffer): ReadFileDescriptor;

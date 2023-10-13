@@ -10,7 +10,7 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
     private readonly imagePostfix: string,
     private readonly imageMeta: ImageMeta,
     private readonly imageBinaryStorage: ImageBinaryStorage,
-    private readonly imageVariant: IImageVariant
+    private readonly imageVariant: IImageVariant,
   ) {
     super();
   }
@@ -22,9 +22,8 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
   async getattr(): Promise<Stats> {
     let size = 0;
     try {
-      size = (await (this.readAll())).length;
-    } catch {
-    }
+      size = (await this.readAll()).length;
+    } catch {}
 
     // @ts-expect-error
     return {
@@ -39,12 +38,10 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
     };
   }
 
-  async open(flags: number): Promise<void> {
-  }
+  async open(flags: number): Promise<void> {}
 
   async readAll(): Promise<Buffer> {
-    const image = await this.imageBinaryStorage
-      .load(this.imageMeta);
+    const image = await this.imageBinaryStorage.load(this.imageMeta);
 
     return (await this.imageVariant.generate(image)).buffer;
   }
