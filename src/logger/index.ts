@@ -1,9 +1,18 @@
+import * as colors from 'colors';
+
 export enum LogLevel {
   DEBUG,
   INFO,
   WARN,
   ERROR,
 }
+
+const logLevelColors = {
+  [LogLevel.DEBUG]: colors.gray,
+  [LogLevel.INFO]: colors.blue,
+  [LogLevel.WARN]: colors.yellow,
+  [LogLevel.ERROR]: colors.red,
+};
 
 export class Logger {
   constructor(
@@ -17,7 +26,8 @@ export class Logger {
     }
 
     const logFunc = level >= LogLevel.ERROR ? console.error : console.log;
-    const msg = `[${LogLevel[level]}] ${this.module}: ${message}`;
+    const lvl = logLevelColors[level](LogLevel[level]);
+    const msg = `[${lvl}] ${this.module}: ${message}`;
 
     logFunc(msg);
   }
