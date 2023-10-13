@@ -14,7 +14,7 @@ export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
   }
 
   get name(): string {
-    return this.imageMeta.name;
+    return this.imageMeta.originalFileName;
   }
 
   async getattr(): Promise<Stats> {

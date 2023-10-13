@@ -1,6 +1,7 @@
 export interface ImageMeta {
   id: string;
   name: string;
+  originalFileName: string;
 }
 
 export interface ImageBinary {

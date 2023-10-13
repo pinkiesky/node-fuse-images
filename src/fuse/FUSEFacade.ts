@@ -45,7 +45,7 @@ export class FUSEFacade {
     const dirs = this.splitPath(path);
     const name = dirs.pop()!;
 
-    const node = await this.safeGetNode(path);
+    const node = await this.safeGetNode('/' + dirs.join('/'));
 
     await node.create(name, mode);
     const fd = this.fdStorage.openWO();

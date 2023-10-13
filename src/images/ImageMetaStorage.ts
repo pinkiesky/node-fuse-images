@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
 import { ImageID, ImageMeta } from './types';
+import { removeExtension } from '../utils/filenames';
 
 export interface ImageMetaStorage {
   list(): Promise<ImageMeta[]>;
@@ -26,12 +27,17 @@ export class FSImageMetaStorage implements ImageMetaStorage {
   }
 
   async create(name: string): Promise<ImageMeta> {
+    const data = await this.getData();
+    if (data.has(name)) {
+      throw new Error(`Image ${name} already exists`);
+    }
+
     const newMeta = {
       id: randomUUID(),
-      name,
+      name: removeExtension(name),
+      originalFileName: name,
     };
 
-    const data = await this.getData();
     data.set(newMeta.name, newMeta);
     await this.applyChanges();
 
