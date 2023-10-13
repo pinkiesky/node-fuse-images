@@ -6,6 +6,7 @@ import { ImageBinaryStorage } from '../images/ImageBinaryStorage';
 import { ImagesItemFUSEHandler } from './ImagesItemFUSEHandler';
 import { ICache } from '../cache/Cache';
 import { IImageVariant } from '../images/variants/types';
+import { FUSEMode } from './utils';
 
 export class ImagesFUSEHandler extends DirectoryFUSETreeNode {
   name = 'Images';
@@ -43,7 +44,11 @@ export class ImagesFUSEHandler extends DirectoryFUSETreeNode {
       ctime: new Date(),
       nlink: 1,
       size: 100,
-      mode: 16877,
+      mode: FUSEMode.directory(
+        FUSEMode.ALLOW_RX,
+        FUSEMode.ALLOW_RX,
+        FUSEMode.ALLOW_RX,
+      ),
       uid: process.getuid ? process.getuid() : 0,
       gid: process.getgid ? process.getgid() : 0,
     };

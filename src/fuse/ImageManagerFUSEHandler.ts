@@ -4,6 +4,7 @@ import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
 import { ImageMetaStorage } from '../images/ImageMetaStorage';
 import { ImageManagerItemFUSEHandler } from './ImageManagerItemFUSEHandler';
 import { ImageBinaryStorage } from '../images/ImageBinaryStorage';
+import { FUSEMode } from './utils';
 
 export class ImageManagerFUSEHandler extends DirectoryFUSETreeNode {
   name = 'Image Manager';
@@ -39,7 +40,11 @@ export class ImageManagerFUSEHandler extends DirectoryFUSETreeNode {
       ctime: new Date(),
       nlink: 1,
       size: 100,
-      mode: 16877,
+      mode: FUSEMode.directory(
+        FUSEMode.ALLOW_RWX,
+        FUSEMode.ALLOW_RX,
+        FUSEMode.ALLOW_RX,
+      ),
       uid: process.getuid ? process.getuid() : 0,
       gid: process.getgid ? process.getgid() : 0,
     };
