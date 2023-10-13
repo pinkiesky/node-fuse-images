@@ -1,7 +1,7 @@
 import * as fuse from 'node-fuse-bindings';
 import * as pureimage from 'pureimage';
 import { PassThrough } from 'stream';
-import { streamToBuffer } from './utils';
+import { streamToBuffer } from './utils/stream';
 import { FSImageMetaStorage } from './images/ImageMetaStorage';
 import { ObjectTreeNode } from './objectTree';
 import { FUSEFacade } from './fuse/FUSEFacade';
@@ -18,12 +18,13 @@ import { RootFUSEHandler } from './fuse/RootFUSEHandler';
 import { ImageManagerFUSEHandler } from './fuse/ImageManagerFUSEHandler';
 import { FUSEError } from './fuse/FUSEError';
 import { ImagesFUSEHandler } from './fuse/ImagesFUSEHandler';
+import { join } from 'path';
 
 const mountPath = process.platform !== 'win32' ? './mnt' : 'M:\\';
 
 const rf = pureimage.registerFont(
-  '/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf',
-  'Ubuntu',
+  join(__dirname, 'assets','OpenSans-Bold.ttf'),
+  'Open Sans',
 );
 rf.loadSync();
 

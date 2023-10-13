@@ -7,6 +7,9 @@ import { ImageMeta } from '../images/types';
 import { ImagesItemOriginalFUSEHandler } from './ImagesItemOriginalFUSEHandler';
 import { ICache } from '../cache/Cache';
 import { IImageVariant } from '../images/variants/types';
+import { ImageAlwaysRandomVariant } from '../images/variants/ImageAlwaysRandomVariant';
+import { ImagesItemAlwaysRandomFUSEHandler } from './ImagesItemAlwaysRandomFUSEHandler';
+import { ImagesItemCounterFUSEHandler } from './ImagesItemCounterFUSEHandler';
 
 export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
   constructor(
@@ -25,6 +28,31 @@ export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
   async children(): Promise<FUSETreeNode[]> {
     return [
       new ImagesItemOriginalFUSEHandler(
+        this.imageMeta,
+        this.imageBinaryStorage,
+        this.cache,
+      ),
+      new ImagesItemAlwaysRandomFUSEHandler(
+        this.imageMeta,
+        this.imageBinaryStorage,
+      ),
+      new ImagesItemCounterFUSEHandler(
+        'webp',
+        10,
+        this.imageMeta,
+        this.imageBinaryStorage,
+        this.cache,
+      ),
+      new ImagesItemCounterFUSEHandler(
+        'jpg',
+        10,
+        this.imageMeta,
+        this.imageBinaryStorage,
+        this.cache,
+      ),
+      new ImagesItemCounterFUSEHandler(
+        'png',
+        10,
         this.imageMeta,
         this.imageBinaryStorage,
         this.cache,
