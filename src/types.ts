@@ -1,41 +1,14 @@
+import { WriteFileDescriptor } from './fd/FileDescriptor';
+import { FileDescriptorStorage } from './fd/FileDescriptorStorage';
+import { FUSEError } from './fuse/FUSEError';
+import { FUSETreeNode } from './fuse/FUSETreeNode';
+import { FUSEPath } from './fuse/types';
 import { ImageMetaStorage } from './images/ImageMetaStorage';
+import { ImageMeta, Image } from './images/types';
+import { IImageVariant } from './images/variants/types';
 import { rootLogger } from './logger';
-import { ObjectTreeNode } from './objectTree';
+import { ObjectTreeNode, defaultPathResolver } from './objectTree';
 import * as fuse from 'node-fuse-bindings';
-
-export interface ImageMeta {
-  id: string;
-  name: string;
-}
-
-export interface ImageBinary {
-  buffer: Buffer;
-  size: number;
-}
-
-export interface Image {
-  meta: ImageMeta;
-  binary: ImageBinary;
-}
-
-export type ImageID = ImageMeta['id'];
-
-type ImageFormat = 'jpeg' | 'png' | 'webp' | 'gif';
-
-interface BinaryLoader {
-  load(image: ImageMeta): Promise<Image>;
-  write(image: Image): Promise<void>;
-}
-
-export interface ImageVariant {
-  generate(image: ImageBinary): Promise<ImageBinary>;
-}
-
-export class ImageOriginalVariant implements ImageVariant {
-  async generate(image: ImageBinary): Promise<ImageBinary> {
-    return image;
-  }
-}
 
 // create -- only name
 // write -- fd
@@ -45,173 +18,151 @@ export class ImageOriginalVariant implements ImageVariant {
 // read -- fd
 // release -- fd
 
-class FUSEPath {
-  constructor(
-    public readonly path: string,
-    public readonly imageName: string,
-    public readonly variantPath: string[],
-  ) {}
-
-  get isRoot(): boolean {
-    return this.path === '/';
-  }
-
-  get isImage(): boolean {
-    return this.variantPath.length === 0 && !!this.imageName;
-  }
-
-  get isVariant(): boolean {
-    return this.variantPath.length > 0 && !!this.imageName;
-  }
-
-  get isValid(): boolean {
-    return this.isRoot || this.isImage || this.isVariant;
-  }
-
-  static parse(path: string) {
-    const [root, imageName, ...variantPath] = path.split('/');
-    return new FUSEPath(path, imageName, variantPath);
-  }
-}
-
-export class FUSEError extends Error {
-  constructor(
-    public readonly code: number,
-    public readonly description?: string,
-  ) {
-    const msg = description ? `${code}: ${description}` : `${code}`;
-    super(msg);
-  }
-}
-
 export class FUSEHandler {
   private logger = rootLogger.getLogger(this.constructor.name);
+  private fdToImageMeta: Map<number, ImageMeta> = new Map();
 
   constructor(
-    private readonly imageMetaStorage: ImageMetaStorage,
-    private readonly rootNode: ObjectTreeNode<ImageVariant>,
+    private readonly rootNode: FUSETreeNode,
+    private readonly fdStorage: FileDescriptorStorage,
   ) {
     if (rootNode.isLeaf) {
       throw new Error('Root node cannot be leaf');
     }
   }
 
+  splitPath(path: string): string[] {
+    return path.substring(1).split('/').filter(Boolean);
+  }
+
   async getattr(path: string): Promise<fuse.Stats> {
     this.logger.info(`getattr(${path})`);
 
-    const fusePath = FUSEPath.parse(path);
-    if (fusePath.isRoot) {
-      // @ts-expect-error
-      return {
-        mtime: new Date(),
-        atime: new Date(),
-        ctime: new Date(),
-        nlink: 1,
-        size: 100,
-        mode: 16877,
-        uid: process.getuid ? process.getuid() : 0,
-        gid: process.getgid ? process.getgid() : 0,
-      };
+    const node = await defaultPathResolver(this.rootNode, this.splitPath(path));
+    if (!node) {
+      throw new FUSEError(fuse.ENOENT, 'not found');
     }
 
-    const imageMeta = await this.imageMetaStorage.get(fusePath.imageName);
-    if (!imageMeta) {
-      throw new FUSEError(fuse.ENOENT, 'meta not found');
-    }
-
-    if (fusePath.isImage) {
-      // @ts-expect-error
-      return {
-        mtime: new Date(),
-        atime: new Date(),
-        ctime: new Date(),
-        nlink: 1,
-        size: 100,
-        mode: 16877,
-        uid: process.getuid ? process.getuid() : 0,
-        gid: process.getgid ? process.getgid() : 0,
-      };
-    }
-
-    if (!fusePath.isVariant) {
-      throw new FUSEError(fuse.EACCES, 'invalid path');
-    }
-
-    const variant = this.rootNode.resolvePath(fusePath.variantPath);
-    if (!variant) {
-      throw new FUSEError(fuse.ENOENT, 'variant not found');
-    }
-
-    if (variant.isLeaf) {
-      // @ts-expect-error
-      return {
-        mtime: new Date(),
-        atime: new Date(),
-        ctime: new Date(),
-        nlink: 1,
-        size: 1000,
-        mode: 33188,
-        uid: process.getuid ? process.getuid() : 0,
-        gid: process.getgid ? process.getgid() : 0,
-      };
-    }
-
-    // @ts-expect-error
-    return {
-      mtime: new Date(),
-      atime: new Date(),
-      ctime: new Date(),
-      nlink: 1,
-      size: 1000,
-      mode: 16877,
-      uid: process.getuid ? process.getuid() : 0,
-      gid: process.getgid ? process.getgid() : 0,
-    };
+    return node.getattr();
   }
 
   async readdir(path: string): Promise<string[]> {
     this.logger.info(`readdir(${path})`);
 
-    const fusePath = FUSEPath.parse(path);
-    if (fusePath.isRoot) {
-      return (await this.imageMetaStorage.list()).map((image) => image.name);
+    const node = await defaultPathResolver(this.rootNode, this.splitPath(path));
+    if (!node) {
+      throw new FUSEError(fuse.ENOENT, 'not found');
     }
 
-    const imageMeta = await this.imageMetaStorage.get(fusePath.imageName);
-    if (!imageMeta) {
-      throw new FUSEError(fuse.ENOENT, 'meta not found');
-    }
-
-    const variant = this.rootNode.resolvePath(fusePath.variantPath);
-    if (!variant) {
-      throw new FUSEError(fuse.ENOENT, 'variant not found');
-    }
-
-    if (!variant.isLeaf) {
-      return variant.children.map((child) => child.name);
-    }
-
-    throw new FUSEError(fuse.ENOENT, 'not a leaf');
+    return (await node?.children()).map((child) => child.name);
   }
 
-  async create(path: string, mode: number): Promise<0> {
-    this.logger.info(`create(${path}, ${mode})`);
+  async create(path: string, mode: number): Promise<number> {
+    this.logger.info(`create(${path})`);
 
-    const fusePath = FUSEPath.parse(path);
-    if (!fusePath.imageName || fusePath.variantPath.length > 0) {
+    const dirs = this.splitPath(path);
+    const name = dirs.pop()!;
+
+    const node = await defaultPathResolver(this.rootNode, dirs);
+    if (!node) {
+      throw new FUSEError(fuse.ENOENT, 'not found');
+    }
+
+    await node.create(name, mode);
+    const fd = this.fdStorage.openWO();
+
+    return fd.fd;
+  }
+
+  async open(path: string, flags: number): Promise<number> {
+    this.logger.info(`open(${path})`);
+
+    const node = await defaultPathResolver(this.rootNode, this.splitPath(path));
+    if (!node) {
+      throw new FUSEError(fuse.ENOENT, 'not found');
+    }
+
+    if (!node.isLeaf) {
       throw new FUSEError(fuse.EACCES, 'invalid path');
     }
 
-    const mbImageMeta = await this.imageMetaStorage.get(fusePath.imageName);
-    if (mbImageMeta) {
-      throw new FUSEError(fuse.EEXIST, 'exist');
+    // check availability
+    await node.open(flags);
+
+    const fd = this.fdStorage.openRO(await node.readAll());
+    return fd.fd;
+  }
+
+  async read(fd: number, buf: Buffer, len: number, pos: number): Promise<number> {
+    this.logger.info(`read(${fd}, ${len}, ${pos})`);
+
+    const fdObject = this.fdStorage.get(fd);
+    if (!fdObject) {
+      throw new FUSEError(fuse.EBADF, 'invalid fd');
     }
 
-    const imageMeta = await this.imageMetaStorage.create(fusePath.imageName);
-    this.logger.info(`Created image ${imageMeta.name} with id ${imageMeta.id}`);
+    return fdObject.readToBuffer(buf, len, pos);
+  }
+
+  async write(fd: number, buf: Buffer, len: number, pos: number): Promise<number> {
+    this.logger.info(`write(${fd}, ${len}, ${pos})`);
+
+    const fdObject = this.fdStorage.get(fd);
+    if (!fdObject) {
+      throw new FUSEError(fuse.EBADF, 'invalid fd');
+    }
+
+    return fdObject.writeToBuffer(buf, len, pos);
+  }
+
+  async release(path: string, fd: number): Promise<0> {
+    this.logger.info(`release(${fd})`);
+
+    const fdObject = this.fdStorage.get(fd);
+    if (!fdObject) {
+      throw new FUSEError(fuse.EBADF, 'invalid fd');
+    }
+
+    const node = await defaultPathResolver(this.rootNode, this.splitPath(path));
+    if (!node) {
+      throw new FUSEError(fuse.ENOENT, 'not found');
+    }
+
+    await node.writeAll(fdObject.binary);
+    this.fdStorage.release(fd);
 
     return 0;
   }
 
-  async open()
+  async rmdir(path: string): Promise<0> {
+    this.logger.info(`rmdir(${path})`);
+
+    const node = await defaultPathResolver(this.rootNode, this.splitPath(path));
+    if (!node) {
+      throw new FUSEError(fuse.ENOENT, 'not found');
+    }
+
+    if (node.isLeaf) {
+      throw new FUSEError(fuse.EACCES, 'invalid path');
+    }
+
+    await node.remove();
+    return 0;
+  }
+
+  async unlink(path: string): Promise<0> {
+    this.logger.info(`unlink(${path})`);
+
+    const node = await defaultPathResolver(this.rootNode, this.splitPath(path));
+    if (!node) {
+      throw new FUSEError(fuse.ENOENT, 'not found');
+    }
+
+    if (!node.isLeaf) {
+      throw new FUSEError(fuse.EACCES, 'invalid path');
+    }
+
+    await node.remove();
+    return 0;
+  }
 }

@@ -1,13 +1,13 @@
 import { promises as fs } from 'fs';
-import { ImageID, ImageMeta } from '../types';
 import { randomUUID } from 'crypto';
+import { ImageID, ImageMeta } from './types';
 
 export interface ImageMetaStorage {
   list(): Promise<ImageMeta[]>;
 
   get(name: ImageID): Promise<ImageMeta | null>;
   create(name: ImageID): Promise<ImageMeta>;
-  delete(name: ImageID): Promise<boolean>;
+  remove(name: ImageID): Promise<boolean>;
 }
 
 export class FSImageMetaStorage implements ImageMetaStorage {
@@ -38,8 +38,15 @@ export class FSImageMetaStorage implements ImageMetaStorage {
     return newMeta;
   }
 
-  async delete(id: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async remove(name: string): Promise<boolean> {
+    const data = await this.getData();
+    const deleted = data.delete(name);
+
+    if (deleted) {
+      await this.applyChanges();
+    }
+
+    return deleted;
   }
 
   async getData() {
