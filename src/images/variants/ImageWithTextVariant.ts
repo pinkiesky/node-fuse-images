@@ -1,11 +1,13 @@
 import { Image, ImageBinary } from '../types';
 import { IImageVariant, ImageFormat } from './types';
 import sharp from 'sharp';
-import * as pureimage from 'pureimage';
+import { createCanvas, loadImage } from 'canvas';
 import { streamToBuffer } from '../../utils/stream';
 import { PassThrough } from 'stream';
+import { promisify } from 'util';
+import { loadImageFromBuffer } from '../../utils/canvas';
 
-const TEXT_SIZE_PX = 20;
+const TEXT_SIZE_PX = 30;
 const TEXT_MARGIN_LEFT_PX = 5;
 
 export class ImageWithTextVariant implements IImageVariant {
@@ -15,23 +17,20 @@ export class ImageWithTextVariant implements IImageVariant {
   ) {}
 
   async generate(image: Image): Promise<ImageBinary> {
+    console.log('data?');
     const sharpImage = sharp(image.binary.buffer).png();
-    const img = await pureimage.decodePNGFromStream(sharpImage);
+    const canvas = await loadImageFromBuffer(await sharpImage.toBuffer());
+    const ctx = canvas.getContext('2d');
 
-    const ctx = img.getContext('2d');
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.fillRect(TEXT_MARGIN_LEFT_PX - 3, 0, 40, TEXT_SIZE_PX * 1.5);
-
+    ctx.strokeStyle = 'white';
     ctx.fillStyle = 'black';
     ctx.font = `${TEXT_SIZE_PX}px Open Sans`;
-    ctx.fillText(this.text, TEXT_MARGIN_LEFT_PX, TEXT_SIZE_PX);
-    
-    const stream = new PassThrough();
-    const s2b = streamToBuffer(stream);
-    pureimage.encodePNGToStream(img, stream);
+    ctx.translate(TEXT_MARGIN_LEFT_PX, TEXT_SIZE_PX);
+    ctx.fillText(this.text, 0, 0);
+    ctx.strokeText(this.text, 0, 0);
 
-    let buffer = await s2b;
+    let buffer = canvas.toBuffer('image/png');
+
     if (this.outputFormat !== 'png') {
       const image = sharp(buffer);
       buffer = await image.toFormat(this.outputFormat).toBuffer();

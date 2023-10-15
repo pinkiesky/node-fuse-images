@@ -2,12 +2,12 @@ import { Stats } from 'node-fuse-bindings';
 import { FileFUSETreeNode } from './FUSETreeNode';
 import { ImageMetaStorage } from '../images/ImageMetaStorage';
 import { ImageMeta } from '../images/types';
-import { ImageBinaryStorage } from '../images/ImageBinaryStorage';
+import { BinaryStorage } from '../images/BinaryStorage';
 
 export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
   constructor(
     private readonly imageMetaStorage: ImageMetaStorage,
-    private readonly imageBinaryStorage: ImageBinaryStorage,
+    private readonly imageBinaryStorage: BinaryStorage,
     private readonly imageMeta: ImageMeta,
   ) {
     super();
@@ -38,20 +38,17 @@ export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
 
   async open(flags: number): Promise<void> {}
 
-  readAll(): Promise<Buffer> {
-    return this.imageBinaryStorage
-      .load(this.imageMeta)
-      .then((image) => image.binary.buffer);
+  async readAll(): Promise<Buffer> {
+    const buff = await this.imageBinaryStorage.load(this.imageMeta.id);
+    if (!buff) {
+      throw new Error('not found');
+    }
+
+    return buff;
   }
 
   async writeAll(b: Buffer): Promise<void> {
-    await this.imageBinaryStorage.write({
-      meta: this.imageMeta,
-      binary: {
-        buffer: b,
-        size: b.length,
-      },
-    });
+    await this.imageBinaryStorage.write(this.imageMeta.id, b);
   }
 
   async remove(): Promise<void> {

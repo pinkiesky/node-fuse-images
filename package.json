@@ -12,9 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "canvas": "^2.11.2",
     "colors": "^1.4.0",
     "node-fuse-bindings": "^2.12.4",
-    "pureimage": "^0.4.10",
     "sharp": "^0.32.6"
   },
   "devDependencies": {

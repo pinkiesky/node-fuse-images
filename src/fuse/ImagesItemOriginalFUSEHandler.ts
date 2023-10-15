@@ -1,7 +1,6 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
-import { ImageBinaryStorage } from '../images/ImageBinaryStorage';
 import { ImageMeta } from '../images/types';
 import { ImageVariantFUSEHandler } from './ImageVariantFUSEHandler';
 import { ImageOriginalVariant } from '../images/variants/ImageOriginalVariant';
@@ -9,6 +8,7 @@ import { IImageVariant, ImageFormat } from '../images/variants/types';
 import { ICache } from '../cache/Cache';
 import { ObjectTreeNode } from '../objectTree';
 import { ImageCacheVariant } from '../images/variants/ImageCacheVariant';
+import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImagesItemOriginalFUSEHandler extends DirectoryFUSETreeNode {
   name = 'original';
@@ -17,7 +17,7 @@ export class ImagesItemOriginalFUSEHandler extends DirectoryFUSETreeNode {
 
   constructor(
     private readonly imageMeta: ImageMeta,
-    private readonly imageBinaryStorage: ImageBinaryStorage,
+    private readonly imageBinaryResolver: ImageBinaryResolver,
     cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
     super();
@@ -26,7 +26,7 @@ export class ImagesItemOriginalFUSEHandler extends DirectoryFUSETreeNode {
       new ImageVariantFUSEHandler(
         `.${format}`,
         this.imageMeta,
-        this.imageBinaryStorage,
+        this.imageBinaryResolver,
         new ImageCacheVariant(
           ['original', format],
           cache,

@@ -1,7 +1,7 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
-import { ImageBinaryStorage } from '../images/ImageBinaryStorage';
+import { BinaryStorage } from '../images/BinaryStorage';
 import { ImageMeta } from '../images/types';
 import { ImageVariantFUSEHandler } from './ImageVariantFUSEHandler';
 import { ImageOriginalVariant } from '../images/variants/ImageOriginalVariant';
@@ -11,6 +11,7 @@ import { ObjectTreeNode } from '../objectTree';
 import { ImageCacheVariant } from '../images/variants/ImageCacheVariant';
 import { ImageAlwaysRandomVariant } from '../images/variants/ImageAlwaysRandomVariant';
 import { ImageWithTextVariant } from '../images/variants/ImageWithTextVariant';
+import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
   private _children: FUSETreeNode[];
@@ -19,7 +20,7 @@ export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
     private readonly outputFormat: ImageFormat,
     private readonly upperLimit: number,
     private readonly imageMeta: ImageMeta,
-    private readonly imageBinaryStorage: ImageBinaryStorage,
+    private readonly imageBinaryStorage: ImageBinaryResolver,
     cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
     super();

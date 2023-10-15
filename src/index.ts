@@ -8,7 +8,7 @@ import { FUSEFacade } from './fuse/FUSEFacade';
 import { type } from 'os';
 import { rootLogger } from './logger';
 import { InMemoryFileDescriptorStorage } from './fuse/fd/FileDescriptorStorage';
-import { FSImageBinaryStorage } from './images/ImageBinaryStorage';
+import { FSImageBinaryStorage } from './images/BinaryStorage';
 import { ImageOriginalVariant } from './images/variants/ImageOriginalVariant';
 import { IImageVariant } from './images/variants/types';
 import { ImageCacheVariant } from './images/variants/ImageCacheVariant';
@@ -19,11 +19,17 @@ import { ImageManagerFUSEHandler } from './fuse/ImageManagerFUSEHandler';
 import { FUSEError } from './fuse/FUSEError';
 import { ImagesFUSEHandler } from './fuse/ImagesFUSEHandler';
 import { join } from 'path';
+import { ImageBinaryResolver } from './images/ImageBinaryResolver';
+import {
+  ImageGeneratorContainer,
+  PassThroughImageGenerator,
+  TextImageGenerator,
+} from './images/generator/IImageGenerator';
 
 const mountPath = process.platform !== 'win32' ? './mnt' : 'M:\\';
 
 const rf = pureimage.registerFont(
-  join(__dirname, 'assets','OpenSans-Bold.ttf'),
+  join(__dirname, 'assets', 'OpenSans-Bold.ttf'),
   'Open Sans',
 );
 rf.loadSync();
@@ -31,13 +37,18 @@ rf.loadSync();
 async function main() {
   const metaStorage = new FSImageMetaStorage('./devdata/images.json');
   const binaryStorage = new FSImageBinaryStorage('./devdata/images');
+  const igc = new ImageGeneratorContainer();
+  igc.addGenerator(new PassThroughImageGenerator());
+  igc.addGenerator(new TextImageGenerator());
+
+  const imageResolver = new ImageBinaryResolver(binaryStorage, igc);
   const imagesCache = new InMemoryCache<
     ReturnType<IImageVariant['generate']>
   >();
 
   const rootNode = new RootFUSEHandler([
     new ImageManagerFUSEHandler(metaStorage, binaryStorage),
-    new ImagesFUSEHandler(metaStorage, binaryStorage, imagesCache),
+    new ImagesFUSEHandler(metaStorage, imageResolver, imagesCache),
   ]);
   const fuseFacade = new FUSEFacade(
     rootNode,

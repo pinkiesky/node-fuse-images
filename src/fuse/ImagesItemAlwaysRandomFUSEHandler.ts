@@ -1,7 +1,7 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
-import { ImageBinaryStorage } from '../images/ImageBinaryStorage';
+import { BinaryStorage } from '../images/BinaryStorage';
 import { ImageMeta } from '../images/types';
 import { ImageVariantFUSEHandler } from './ImageVariantFUSEHandler';
 import { ImageOriginalVariant } from '../images/variants/ImageOriginalVariant';
@@ -10,6 +10,7 @@ import { ICache } from '../cache/Cache';
 import { ObjectTreeNode } from '../objectTree';
 import { ImageCacheVariant } from '../images/variants/ImageCacheVariant';
 import { ImageAlwaysRandomVariant } from '../images/variants/ImageAlwaysRandomVariant';
+import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImagesItemAlwaysRandomFUSEHandler extends DirectoryFUSETreeNode {
   name = 'always_random';
@@ -18,7 +19,7 @@ export class ImagesItemAlwaysRandomFUSEHandler extends DirectoryFUSETreeNode {
 
   constructor(
     private readonly imageMeta: ImageMeta,
-    private readonly imageBinaryStorage: ImageBinaryStorage,
+    private readonly imageBinaryResolver: ImageBinaryResolver,
   ) {
     super();
 
@@ -26,7 +27,7 @@ export class ImagesItemAlwaysRandomFUSEHandler extends DirectoryFUSETreeNode {
       new ImageVariantFUSEHandler(
         `.${format}`,
         this.imageMeta,
-        this.imageBinaryStorage,
+        this.imageBinaryResolver,
         new ImageAlwaysRandomVariant(format),
       );
 

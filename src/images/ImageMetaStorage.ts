@@ -2,6 +2,7 @@ import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
 import { ImageID, ImageMeta } from './types';
 import { removeExtension } from '../utils/filenames';
+import { filenameToMimeType } from '../utils/mimeType';
 
 export interface ImageMetaStorage {
   list(): Promise<ImageMeta[]>;
@@ -32,10 +33,16 @@ export class FSImageMetaStorage implements ImageMetaStorage {
       throw new Error(`Image ${name} already exists`);
     }
 
+    const mimeType = filenameToMimeType(name);
+    if (!mimeType) {
+      throw new Error(`Unknown image type for ${name}`);
+    }
+
     const newMeta = {
       id: randomUUID(),
       name: removeExtension(name),
       originalFileName: name,
+      originalFileType: mimeType,
     };
 
     data.set(newMeta.name, newMeta);

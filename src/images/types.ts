@@ -1,7 +1,10 @@
+import { MimeType } from '../utils/mimeType';
+
 export interface ImageMeta {
   id: string;
   name: string;
   originalFileName: string;
+  originalFileType: MimeType;
 }
 
 export interface ImageBinary {

@@ -5,10 +5,9 @@ import { ImageMetaStorage } from '../images/ImageMetaStorage';
 import { ImageManagerItemFUSEHandler } from './ImageManagerItemFUSEHandler';
 import { BinaryStorage } from '../images/BinaryStorage';
 import { FUSEMode } from './utils';
-import { getExtension } from '../utils/filenames';
 
-export class ImageManagerFUSEHandler extends DirectoryFUSETreeNode {
-  name = 'Image Manager';
+export class ImageManagerDynamicFUSEHandler extends DirectoryFUSETreeNode {
+  name = 'Dynamic Images';
 
   constructor(
     private readonly imageMetaStorage: ImageMetaStorage,

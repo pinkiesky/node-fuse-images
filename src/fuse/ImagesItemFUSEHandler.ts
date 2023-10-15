@@ -2,7 +2,7 @@ import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
 import { ImageMetaStorage } from '../images/ImageMetaStorage';
-import { ImageBinaryStorage } from '../images/ImageBinaryStorage';
+import { BinaryStorage } from '../images/BinaryStorage';
 import { ImageMeta } from '../images/types';
 import { ImagesItemOriginalFUSEHandler } from './ImagesItemOriginalFUSEHandler';
 import { ICache } from '../cache/Cache';
@@ -10,11 +10,12 @@ import { IImageVariant } from '../images/variants/types';
 import { ImageAlwaysRandomVariant } from '../images/variants/ImageAlwaysRandomVariant';
 import { ImagesItemAlwaysRandomFUSEHandler } from './ImagesItemAlwaysRandomFUSEHandler';
 import { ImagesItemCounterFUSEHandler } from './ImagesItemCounterFUSEHandler';
+import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
   constructor(
     private readonly imageMetaStorage: ImageMetaStorage,
-    private readonly imageBinaryStorage: ImageBinaryStorage,
+    private readonly imageBinaryResolver: ImageBinaryResolver,
     private readonly imageMeta: ImageMeta,
     private cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
@@ -29,32 +30,32 @@ export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
     return [
       new ImagesItemOriginalFUSEHandler(
         this.imageMeta,
-        this.imageBinaryStorage,
+        this.imageBinaryResolver,
         this.cache,
       ),
       new ImagesItemAlwaysRandomFUSEHandler(
         this.imageMeta,
-        this.imageBinaryStorage,
+        this.imageBinaryResolver,
       ),
       new ImagesItemCounterFUSEHandler(
         'webp',
         10,
         this.imageMeta,
-        this.imageBinaryStorage,
+        this.imageBinaryResolver,
         this.cache,
       ),
       new ImagesItemCounterFUSEHandler(
         'jpg',
         10,
         this.imageMeta,
-        this.imageBinaryStorage,
+        this.imageBinaryResolver,
         this.cache,
       ),
       new ImagesItemCounterFUSEHandler(
         'png',
         10,
         this.imageMeta,
-        this.imageBinaryStorage,
+        this.imageBinaryResolver,
         this.cache,
       ),
     ];

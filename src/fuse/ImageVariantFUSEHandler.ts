@@ -1,15 +1,15 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { FileFUSETreeNode } from './FUSETreeNode';
-import { ImageBinaryStorage } from '../images/ImageBinaryStorage';
 import { IImageVariant } from '../images/variants/types';
 import { ImageMeta } from '../images/types';
+import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImageVariantFUSEHandler extends FileFUSETreeNode {
   constructor(
     private readonly imagePostfix: string,
     private readonly imageMeta: ImageMeta,
-    private readonly imageBinaryStorage: ImageBinaryStorage,
+    private readonly imageBinaryResolver: ImageBinaryResolver,
     private readonly imageVariant: IImageVariant,
   ) {
     super();
@@ -41,7 +41,10 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
   async open(flags: number): Promise<void> {}
 
   async readAll(): Promise<Buffer> {
-    const image = await this.imageBinaryStorage.load(this.imageMeta);
+    const image = await this.imageBinaryResolver.load(this.imageMeta);
+    if (!image) {
+      throw FUSEError.notFound('resolver not found for ' + this.name);
+    }
 
     return (await this.imageVariant.generate(image)).buffer;
   }

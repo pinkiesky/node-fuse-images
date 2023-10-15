@@ -2,18 +2,19 @@ import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
 import { ImageMetaStorage } from '../images/ImageMetaStorage';
-import { ImageBinaryStorage } from '../images/ImageBinaryStorage';
+import { BinaryStorage } from '../images/BinaryStorage';
 import { ImagesItemFUSEHandler } from './ImagesItemFUSEHandler';
 import { ICache } from '../cache/Cache';
 import { IImageVariant } from '../images/variants/types';
 import { FUSEMode } from './utils';
+import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImagesFUSEHandler extends DirectoryFUSETreeNode {
   name = 'Images';
 
   constructor(
     private readonly imageMetaStorage: ImageMetaStorage,
-    private readonly imageBinaryStorage: ImageBinaryStorage,
+    private readonly imageBinaryResolver: ImageBinaryResolver,
     private cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
     super();
@@ -25,7 +26,7 @@ export class ImagesFUSEHandler extends DirectoryFUSETreeNode {
       (meta) =>
         new ImagesItemFUSEHandler(
           this.imageMetaStorage,
-          this.imageBinaryStorage,
+          this.imageBinaryResolver,
           meta,
           this.cache,
         ),
