@@ -2,17 +2,17 @@ import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
 import { ImageMetaStorage } from '../images/ImageMetaStorage';
-import { BinaryStorage } from '../images/BinaryStorage';
 import { ImageMeta } from '../images/types';
 import { ImagesItemOriginalFUSEHandler } from './ImagesItemOriginalFUSEHandler';
 import { ICache } from '../cache/Cache';
 import { IImageVariant } from '../images/variants/types';
-import { ImageAlwaysRandomVariant } from '../images/variants/ImageAlwaysRandomVariant';
 import { ImagesItemAlwaysRandomFUSEHandler } from './ImagesItemAlwaysRandomFUSEHandler';
 import { ImagesItemCounterFUSEHandler } from './ImagesItemCounterFUSEHandler';
 import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
+  private readonly _children: FUSETreeNode[];
+
   constructor(
     private readonly imageMetaStorage: ImageMetaStorage,
     private readonly imageBinaryResolver: ImageBinaryResolver,
@@ -20,14 +20,8 @@ export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
     private cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
     super();
-  }
 
-  get name(): string {
-    return this.imageMeta.name;
-  }
-
-  async children(): Promise<FUSETreeNode[]> {
-    return [
+    this._children = [
       new ImagesItemOriginalFUSEHandler(
         this.imageMeta,
         this.imageBinaryResolver,
@@ -59,6 +53,14 @@ export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
         this.cache,
       ),
     ];
+  }
+
+  get name(): string {
+    return this.imageMeta.name;
+  }
+
+  children(): Promise<FUSETreeNode[]> {
+    return Promise.resolve(this._children);
   }
 
   async create(name: string, mode: number): Promise<void> {

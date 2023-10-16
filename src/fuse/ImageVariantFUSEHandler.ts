@@ -6,6 +6,8 @@ import { ImageMeta } from '../images/types';
 import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImageVariantFUSEHandler extends FileFUSETreeNode {
+  private bufferedImage: Promise<Buffer> | null = null;
+
   constructor(
     private readonly imagePostfix: string,
     private readonly imageMeta: ImageMeta,
@@ -19,10 +21,39 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
     return `${this.imageMeta.name}${this.imagePostfix}`;
   }
 
+  getVariantBuffer(cleanBuffer: boolean): Promise<Buffer> {
+    if (this.bufferedImage) {
+      const buffer = this.bufferedImage;
+
+      if (cleanBuffer) {
+        this.bufferedImage = null;
+      }
+
+      return buffer;
+    }
+
+    const newBuffer = this.imageBinaryResolver
+      .load(this.imageMeta)
+      .then((image) => {
+        if (!image) {
+          throw FUSEError.notFound('resolver not found for ' + this.name);
+        }
+
+        return this.imageVariant.generate(image);
+      })
+      .then((imageBinary) => imageBinary.buffer);
+
+    if (!cleanBuffer) {
+      this.bufferedImage = newBuffer;
+    }
+
+    return newBuffer;
+  }
+
   async getattr(): Promise<Stats> {
     let size = 0;
     try {
-      size = (await this.readAll()).length;
+      size = (await this.getVariantBuffer(false)).length;
     } catch {}
 
     // @ts-expect-error
@@ -41,12 +72,7 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
   async open(flags: number): Promise<void> {}
 
   async readAll(): Promise<Buffer> {
-    const image = await this.imageBinaryResolver.load(this.imageMeta);
-    if (!image) {
-      throw FUSEError.notFound('resolver not found for ' + this.name);
-    }
-
-    return (await this.imageVariant.generate(image)).buffer;
+    return this.getVariantBuffer(true);
   }
 
   writeAll(b: Buffer): Promise<void> {
