@@ -1,5 +1,4 @@
 import * as fuse from 'node-fuse-bindings';
-import * as pureimage from 'pureimage';
 import { PassThrough } from 'stream';
 import { streamToBuffer } from './utils/stream';
 import { FSImageMetaStorage } from './images/ImageMetaStorage';
@@ -27,12 +26,6 @@ import {
 } from './images/generator/IImageGenerator';
 
 const mountPath = process.platform !== 'win32' ? './mnt' : 'M:\\';
-
-const rf = pureimage.registerFont(
-  join(__dirname, 'assets', 'OpenSans-Bold.ttf'),
-  'Open Sans',
-);
-rf.loadSync();
 
 async function main() {
   const metaStorage = new FSImageMetaStorage('./devdata/images.json');
@@ -91,9 +84,17 @@ async function main() {
       });
   };
 
+  process.on('SIGINT', () => {
+    fuse.unmount(mountPath, () => {
+      console.log('filesystem unmounted');
+      process.exit();
+    });
+  });
+
   fuse.mount(
     mountPath,
     {
+      options: ['direct_io'],
       readdir(path, cb) {
         handleResultWrapper(fuseFacade.readdir(path), cb);
       },
@@ -120,6 +121,18 @@ async function main() {
       },
       unlink(path, cb) {
         handleResultWrapper(fuseFacade.unlink(path), cb);
+      },
+      truncate(path, size, cb) {
+        console.log('truncate', path, size);
+        return cb(0);
+      },
+      flush(path, fd, cb) {
+        console.log('flush', path, fd);
+        return cb(0);
+      },
+      rename(src, dest, cb) {
+        console.log('rename', src, dest);
+        return cb(0);
       },
     },
     function (err) {
