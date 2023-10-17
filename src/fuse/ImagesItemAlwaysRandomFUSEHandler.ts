@@ -13,10 +13,8 @@ import { ImageAlwaysRandomVariant } from '../images/variants/ImageAlwaysRandomVa
 import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImagesItemAlwaysRandomFUSEHandler extends DirectoryFUSETreeNode {
-  name = 'always_random';
-
   private _children: FUSETreeNode[];
-
+  name = 'always_random';
   constructor(
     private readonly imageMeta: ImageMeta,
     private readonly imageBinaryResolver: ImageBinaryResolver,

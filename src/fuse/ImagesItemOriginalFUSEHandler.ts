@@ -11,10 +11,8 @@ import { ImageCacheVariant } from '../images/variants/ImageCacheVariant';
 import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImagesItemOriginalFUSEHandler extends DirectoryFUSETreeNode {
-  name = 'original';
-
   private _children: FUSETreeNode[];
-
+  name = 'original';
   constructor(
     private readonly imageMeta: ImageMeta,
     private readonly imageBinaryResolver: ImageBinaryResolver,

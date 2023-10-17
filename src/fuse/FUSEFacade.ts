@@ -13,30 +13,8 @@ export class FUSEFacade {
     private readonly fdStorage: FileDescriptorStorage,
   ) {}
 
-  splitPath(path: string): string[] {
+  private splitPath(path: string): string[] {
     return path.substring(1).split('/').filter(Boolean);
-  }
-
-  async safeGetNode(path: string): Promise<FUSETreeNode> {
-    const node = await defaultPathResolver(this.rootNode, this.splitPath(path));
-    if (!node) {
-      throw new FUSEError(fuse.ENOENT, 'not found');
-    }
-
-    return node;
-  }
-
-  async getattr(path: string): Promise<fuse.Stats> {
-    this.logger.info(`getattr(${path})`);
-    return (await this.safeGetNode(path)).getattr();
-  }
-
-  async readdir(path: string): Promise<string[]> {
-    this.logger.info(`readdir(${path})`);
-
-    const node = await this.safeGetNode(path);
-
-    return (await node?.children()).map((child) => child.name);
   }
 
   async create(path: string, mode: number): Promise<number> {
@@ -51,6 +29,11 @@ export class FUSEFacade {
     const fd = this.fdStorage.openWO();
 
     return fd.fd;
+  }
+
+  async getattr(path: string): Promise<fuse.Stats> {
+    this.logger.info(`getattr(${path})`);
+    return (await this.safeGetNode(path)).getattr();
   }
 
   async open(path: string, flags: number): Promise<number> {
@@ -85,20 +68,12 @@ export class FUSEFacade {
     return fdObject.readToBuffer(buf, len, pos);
   }
 
-  async write(
-    fd: number,
-    buf: Buffer,
-    len: number,
-    pos: number,
-  ): Promise<number> {
-    this.logger.info(`write(${fd}, ${len}, ${pos})`);
+  async readdir(path: string): Promise<string[]> {
+    this.logger.info(`readdir(${path})`);
 
-    const fdObject = this.fdStorage.get(fd);
-    if (!fdObject) {
-      throw new FUSEError(fuse.EBADF, 'invalid fd');
-    }
+    const node = await this.safeGetNode(path);
 
-    return fdObject.writeToBuffer(buf, len, pos);
+    return (await node?.children()).map((child) => child.name);
   }
 
   async release(path: string, fd: number): Promise<0> {
@@ -130,6 +105,15 @@ export class FUSEFacade {
     return 0;
   }
 
+  async safeGetNode(path: string): Promise<FUSETreeNode> {
+    const node = await defaultPathResolver(this.rootNode, this.splitPath(path));
+    if (!node) {
+      throw new FUSEError(fuse.ENOENT, 'not found');
+    }
+
+    return node;
+  }
+
   async unlink(path: string): Promise<0> {
     this.logger.info(`unlink(${path})`);
 
@@ -141,5 +125,21 @@ export class FUSEFacade {
 
     await node.remove();
     return 0;
+  }
+
+  async write(
+    fd: number,
+    buf: Buffer,
+    len: number,
+    pos: number,
+  ): Promise<number> {
+    this.logger.info(`write(${fd}, ${len}, ${pos})`);
+
+    const fdObject = this.fdStorage.get(fd);
+    if (!fdObject) {
+      throw new FUSEError(fuse.EBADF, 'invalid fd');
+    }
+
+    return fdObject.writeToBuffer(buf, len, pos);
   }
 }

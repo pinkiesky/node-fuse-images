@@ -5,34 +5,30 @@ import { IFUSEHandler } from './IFUSEHandler';
 export interface FUSETreeNode extends ObjectTreeNode, IFUSEHandler {}
 
 export abstract class FileFUSETreeNode implements FUSETreeNode {
+  isLeaf = true;
   abstract name: string;
 
-  abstract getattr(): Promise<any>;
-  abstract open(flags: number): Promise<void>;
-  abstract readAll(): Promise<Buffer>;
-  abstract writeAll(b: Buffer): Promise<void>;
-  abstract remove(): Promise<void>;
-
-  isLeaf = true;
+  async children(): Promise<FUSETreeNode[]> {
+    return [];
+  }
 
   create(): Promise<void> {
     throw FUSEError.notADirectory();
   }
 
-  async children(): Promise<FUSETreeNode[]> {
-    return [];
-  }
+  abstract getattr(): Promise<any>;
+  abstract open(flags: number): Promise<void>;
+  abstract readAll(): Promise<Buffer>;
+  abstract remove(): Promise<void>;
+  abstract writeAll(b: Buffer): Promise<void>;
 }
 
 export abstract class DirectoryFUSETreeNode implements FUSETreeNode {
+  isLeaf = false;
   abstract name: string;
-
+  abstract children(): Promise<ObjectTreeNode[]>;
   abstract create(name: string, mode: number): Promise<void>;
   abstract getattr(): Promise<any>;
-  abstract remove(): Promise<void>;
-  abstract children(): Promise<ObjectTreeNode[]>;
-
-  isLeaf = false;
 
   open(): Promise<void> {
     throw FUSEError.notAFile();
@@ -41,6 +37,8 @@ export abstract class DirectoryFUSETreeNode implements FUSETreeNode {
   readAll(): Promise<Buffer> {
     throw FUSEError.notAFile();
   }
+
+  abstract remove(): Promise<void>;
 
   writeAll(): Promise<void> {
     throw FUSEError.notAFile();

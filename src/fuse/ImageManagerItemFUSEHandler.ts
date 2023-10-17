@@ -5,16 +5,16 @@ import { ImageMeta } from '../images/types';
 import { BinaryStorage } from '../images/BinaryStorage';
 
 export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
+  get name(): string {
+    return this.imageMeta.originalFileName;
+  }
+
   constructor(
     private readonly imageMetaStorage: ImageMetaStorage,
     private readonly imageBinaryStorage: BinaryStorage,
     private readonly imageMeta: ImageMeta,
   ) {
     super();
-  }
-
-  get name(): string {
-    return this.imageMeta.originalFileName;
   }
 
   async getattr(): Promise<Stats> {
@@ -47,11 +47,11 @@ export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
     return buff;
   }
 
-  async writeAll(b: Buffer): Promise<void> {
-    await this.imageBinaryStorage.write(this.imageMeta.id, b);
-  }
-
   async remove(): Promise<void> {
     await this.imageMetaStorage.remove(this.imageMeta.name);
+  }
+
+  async writeAll(b: Buffer): Promise<void> {
+    await this.imageBinaryStorage.write(this.imageMeta.id, b);
   }
 }

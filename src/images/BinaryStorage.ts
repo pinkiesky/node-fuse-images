@@ -10,7 +10,7 @@ export interface BinaryStorage {
 export class FSImageBinaryStorage implements BinaryStorage {
   constructor(private readonly mountPath: string) {}
 
-  getPath(id: string): string {
+  private getPath(id: string): string {
     return join(this.mountPath, id);
   }
 
@@ -18,11 +18,11 @@ export class FSImageBinaryStorage implements BinaryStorage {
     return fs.readFile(this.getPath(id));
   }
 
-  write(id: string, binary: Buffer): Promise<void> {
-    return fs.writeFile(this.getPath(id), binary);
-  }
-
   remove(id: string): Promise<void> {
     return fs.unlink(this.getPath(id));
+  }
+
+  write(id: string, binary: Buffer): Promise<void> {
+    return fs.writeFile(this.getPath(id), binary);
   }
 }

@@ -16,6 +16,10 @@ import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
   private _children: FUSETreeNode[];
 
+  get name(): string {
+    return `counter to ${this.upperLimit} (${this.outputFormat})`;
+  }
+
   constructor(
     private readonly outputFormat: ImageFormat,
     private readonly upperLimit: number,
@@ -38,10 +42,6 @@ export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
       );
 
     this._children = new Array(upperLimit).fill(0).map((_, i) => build(`${i}`));
-  }
-
-  get name(): string {
-    return `counter to ${this.upperLimit} (${this.outputFormat})`;
   }
 
   children(): Promise<ObjectTreeNode[]> {

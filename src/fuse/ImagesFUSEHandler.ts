@@ -9,11 +9,9 @@ import { FUSEMode } from './utils';
 import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 
 export class ImagesFUSEHandler extends DirectoryFUSETreeNode {
-  name = 'Images';
-
-  private previousChildrenIds: string[] = [];
   private _childer: FUSETreeNode[] = [];
-
+  private previousChildrenIds: string[] = [];
+  name = 'Images';
   constructor(
     private readonly imageMetaStorage: ImageMetaStorage,
     private readonly imageBinaryResolver: ImageBinaryResolver,
@@ -27,8 +25,12 @@ export class ImagesFUSEHandler extends DirectoryFUSETreeNode {
     const childrenIds = list.map((meta) => meta.id);
 
     // check diff
-    const isAnyAdd = childrenIds.some((id) => !this.previousChildrenIds.includes(id));
-    const isAnyRemove = this.previousChildrenIds.some((id) => !childrenIds.includes(id));
+    const isAnyAdd = childrenIds.some(
+      (id) => !this.previousChildrenIds.includes(id),
+    );
+    const isAnyRemove = this.previousChildrenIds.some(
+      (id) => !childrenIds.includes(id),
+    );
     if (!isAnyAdd && !isAnyRemove) {
       return this._childer;
     }

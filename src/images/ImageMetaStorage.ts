@@ -18,13 +18,11 @@ export class FSImageMetaStorage implements ImageMetaStorage {
 
   constructor(private readonly jsonConfigFilePath: string) {}
 
-  list(): Promise<ImageMeta[]> {
-    return this.getData().then((data) => [...data.values()]);
-  }
-
-  async get(name: string): Promise<ImageMeta | null> {
+  async applyChanges() {
     const data = await this.getData();
-    return data.get(name) ?? null;
+    const rawData = JSON.stringify(Array.from(data.values()), null, 2);
+
+    await fs.writeFile(this.jsonConfigFilePath, rawData);
   }
 
   async create(name: string): Promise<ImageMeta> {
@@ -51,15 +49,9 @@ export class FSImageMetaStorage implements ImageMetaStorage {
     return newMeta;
   }
 
-  async remove(name: string): Promise<boolean> {
+  async get(name: string): Promise<ImageMeta | null> {
     const data = await this.getData();
-    const deleted = data.delete(name);
-
-    if (deleted) {
-      await this.applyChanges();
-    }
-
-    return deleted;
+    return data.get(name) ?? null;
   }
 
   async getData() {
@@ -84,10 +76,18 @@ export class FSImageMetaStorage implements ImageMetaStorage {
     return this.cache!;
   }
 
-  async applyChanges() {
-    const data = await this.getData();
-    const rawData = JSON.stringify(Array.from(data.values()), null, 2);
+  list(): Promise<ImageMeta[]> {
+    return this.getData().then((data) => [...data.values()]);
+  }
 
-    await fs.writeFile(this.jsonConfigFilePath, rawData);
+  async remove(name: string): Promise<boolean> {
+    const data = await this.getData();
+    const deleted = data.delete(name);
+
+    if (deleted) {
+      await this.applyChanges();
+    }
+
+    return deleted;
   }
 }

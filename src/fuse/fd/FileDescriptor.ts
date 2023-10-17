@@ -12,14 +12,14 @@ export interface FileDescriptor {
 }
 
 export class ReadFileDescriptor implements FileDescriptor {
+  get size(): number {
+    return this.binary.length;
+  }
+
   constructor(
     public readonly fd: number,
     public readonly binary: Buffer,
   ) {}
-
-  get size(): number {
-    return this.binary.length;
-  }
 
   readToBuffer(buffer: Buffer, len: number, pos: number): number {
     if (pos >= this.binary.length) {
@@ -38,15 +38,15 @@ export class ReadFileDescriptor implements FileDescriptor {
 export class WriteFileDescriptor implements FileDescriptor {
   private buffer: Buffer = Buffer.alloc(0);
 
-  constructor(public readonly fd: number) {}
+  get binary(): Buffer {
+    return this.buffer;
+  }
 
   get size(): number {
     return this.buffer.length;
   }
 
-  get binary(): Buffer {
-    return this.buffer;
-  }
+  constructor(public readonly fd: number) {}
 
   readToBuffer(): number {
     throw new FUSEError(fuse.EBADF, 'invalid fd');

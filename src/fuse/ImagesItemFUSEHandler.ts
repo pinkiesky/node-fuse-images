@@ -13,6 +13,10 @@ import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
   private readonly _children: FUSETreeNode[];
 
+  get name(): string {
+    return this.imageMeta.name;
+  }
+
   constructor(
     private readonly imageMetaStorage: ImageMetaStorage,
     private readonly imageBinaryResolver: ImageBinaryResolver,
@@ -53,10 +57,6 @@ export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
         this.cache,
       ),
     ];
-  }
-
-  get name(): string {
-    return this.imageMeta.name;
   }
 
   children(): Promise<FUSETreeNode[]> {

@@ -8,6 +8,10 @@ import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
 export class ImageVariantFUSEHandler extends FileFUSETreeNode {
   private bufferedImage: Promise<Buffer> | null = null;
 
+  get name(): string {
+    return `${this.imageMeta.name}${this.imagePostfix}`;
+  }
+
   constructor(
     private readonly imagePostfix: string,
     private readonly imageMeta: ImageMeta,
@@ -17,11 +21,7 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
     super();
   }
 
-  get name(): string {
-    return `${this.imageMeta.name}${this.imagePostfix}`;
-  }
-
-  getVariantBuffer(cleanBuffer: boolean): Promise<Buffer> {
+  private getVariantBuffer(cleanBuffer: boolean): Promise<Buffer> {
     if (this.bufferedImage) {
       const buffer = this.bufferedImage;
 
@@ -75,11 +75,11 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
     return this.getVariantBuffer(true);
   }
 
-  writeAll(b: Buffer): Promise<void> {
+  remove(): Promise<void> {
     throw FUSEError.accessDenied();
   }
 
-  remove(): Promise<void> {
+  writeAll(b: Buffer): Promise<void> {
     throw FUSEError.accessDenied();
   }
 }

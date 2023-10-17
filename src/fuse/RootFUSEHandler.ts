@@ -3,9 +3,8 @@ import { FUSEError } from './FUSEError';
 import { FUSETreeNode } from './FUSETreeNode';
 
 export class RootFUSEHandler implements FUSETreeNode {
-  name = 'Root Node';
   isLeaf = false;
-
+  name = 'Root Node';
   constructor(private readonly _children: FUSETreeNode[]) {}
 
   async children() {
@@ -38,11 +37,11 @@ export class RootFUSEHandler implements FUSETreeNode {
     throw FUSEError.accessDenied();
   }
 
-  writeAll(b: Buffer): Promise<void> {
+  remove(): Promise<void> {
     throw FUSEError.accessDenied();
   }
 
-  remove(): Promise<void> {
+  writeAll(b: Buffer): Promise<void> {
     throw FUSEError.accessDenied();
   }
 }
