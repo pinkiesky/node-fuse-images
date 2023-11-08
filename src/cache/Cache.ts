@@ -1,7 +1,7 @@
 export interface ICache<V> {
-  get(key: string): V | null;
-  set(key: string, value: V): void;
-  delete(key: string): void;
+  get(key: string): Promise<V | null>;
+  set(key: string, value: V): Promise<void>;
+  delete(key: string): Promise<void>;
 }
 
 export class InMemoryCache<V> implements ICache<V> {
@@ -9,15 +9,15 @@ export class InMemoryCache<V> implements ICache<V> {
 
   constructor() {}
 
-  delete(key: string): void {
+  async delete(key: string): Promise<void> {
     this.cache.delete(key);
   }
 
-  get(key: string): V | null {
+  async get(key: string): Promise<V | null> {
     return this.cache.get(key) ?? null;
   }
 
-  set(key: string, value: V): void {
+  async set(key: string, value: V): Promise<void> {
     this.cache.set(key, value);
   }
 }

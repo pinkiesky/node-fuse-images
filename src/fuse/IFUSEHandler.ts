@@ -5,7 +5,7 @@ export interface IFUSEHandler {
 
   create(name: string, mode: number): Promise<void>;
   getattr(): Promise<fuse.Stats>;
-  open(flags: number): Promise<void>;
+  checkAvailability(flags: number): Promise<void>;
   readAll(): Promise<Buffer>;
   writeAll(b: Buffer): Promise<void>;
   remove(): Promise<void>;

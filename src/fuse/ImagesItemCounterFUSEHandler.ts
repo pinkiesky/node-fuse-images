@@ -1,20 +1,17 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
-import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
-import { BinaryStorage } from '../images/BinaryStorage';
+import { DirectoryFUSETreeNode, IFUSETreeNode } from './IFUSETreeNode';
 import { ImageMeta } from '../images/types';
 import { ImageVariantFUSEHandler } from './ImageVariantFUSEHandler';
-import { ImageOriginalVariant } from '../images/variants/ImageOriginalVariant';
-import { IImageVariant, ImageFormat } from '../images/variants/types';
+import { ImageFormat } from '../images/variants/types';
 import { ICache } from '../cache/Cache';
-import { ObjectTreeNode } from '../objectTree';
-import { ImageCacheVariant } from '../images/variants/ImageCacheVariant';
-import { ImageAlwaysRandomVariant } from '../images/variants/ImageAlwaysRandomVariant';
+import { ImageCacheWrapper } from '../images/variants/ImageCacheWrapper';
 import { ImageWithTextVariant } from '../images/variants/ImageWithTextVariant';
-import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
+import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
+import { IImageVariant } from '../images/variants/IImageVariant';
 
 export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
-  private _children: FUSETreeNode[];
+  private _children: IFUSETreeNode[];
 
   get name(): string {
     return `counter to ${this.upperLimit} (${this.outputFormat})`;
@@ -24,7 +21,7 @@ export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
     private readonly outputFormat: ImageFormat,
     private readonly upperLimit: number,
     private readonly imageMeta: ImageMeta,
-    private readonly imageBinaryStorage: ImageBinaryResolver,
+    private readonly imageBinaryStorage: ImageLoaderFacade,
     cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
     super();
@@ -34,7 +31,7 @@ export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
         `_${text}.${outputFormat}`,
         this.imageMeta,
         this.imageBinaryStorage,
-        new ImageCacheVariant(
+        new ImageCacheWrapper(
           ['counter', text, outputFormat],
           cache,
           new ImageWithTextVariant(outputFormat, text),
@@ -44,7 +41,7 @@ export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
     this._children = new Array(upperLimit).fill(0).map((_, i) => build(`${i}`));
   }
 
-  children(): Promise<ObjectTreeNode[]> {
+  children(): Promise<IFUSETreeNode[]> {
     return Promise.resolve(this._children);
   }
 
@@ -66,7 +63,7 @@ export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
     };
   }
 
-  remove(): Promise<void> {
+  remove():Promise< void> {
     throw FUSEError.accessDenied();
   }
 }

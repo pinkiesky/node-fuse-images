@@ -1,8 +1,8 @@
 import { ImageBinary, Image } from '../types';
-import { IImageVariant } from './types';
 import { ICache } from '../../cache/Cache';
+import { IImageVariant } from './IImageVariant';
 
-export class ImageCacheVariant implements IImageVariant {
+export class ImageCacheWrapper implements IImageVariant {
   private readonly cacheId: string;
 
   constructor(
@@ -16,7 +16,7 @@ export class ImageCacheVariant implements IImageVariant {
   async generate(image: Image): Promise<ImageBinary> {
     const key = `${this.cacheId}:${image.meta.id}`;
 
-    const cached = this.cache.get(key);
+    const cached = await this.cache.get(key);
     if (cached) {
       return cached;
     }

@@ -1,21 +1,21 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
-import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
+import { DirectoryFUSETreeNode, IFUSETreeNode } from './IFUSETreeNode';
 import { ImageMeta } from '../images/types';
 import { ImageVariantFUSEHandler } from './ImageVariantFUSEHandler';
 import { ImageOriginalVariant } from '../images/variants/ImageOriginalVariant';
-import { IImageVariant, ImageFormat } from '../images/variants/types';
+import { ImageFormat } from '../images/variants/types';
 import { ICache } from '../cache/Cache';
-import { ObjectTreeNode } from '../objectTree';
-import { ImageCacheVariant } from '../images/variants/ImageCacheVariant';
-import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
+import { ImageCacheWrapper } from '../images/variants/ImageCacheWrapper';
+import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
+import { IImageVariant } from '../images/variants/IImageVariant';
 
 export class ImagesItemOriginalFUSEHandler extends DirectoryFUSETreeNode {
-  private _children: FUSETreeNode[];
+  private _children: IFUSETreeNode[];
   name = 'original';
   constructor(
     private readonly imageMeta: ImageMeta,
-    private readonly imageBinaryResolver: ImageBinaryResolver,
+    private readonly imageBinaryResolver: ImageLoaderFacade,
     cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
     super();
@@ -25,7 +25,7 @@ export class ImagesItemOriginalFUSEHandler extends DirectoryFUSETreeNode {
         `.${format}`,
         this.imageMeta,
         this.imageBinaryResolver,
-        new ImageCacheVariant(
+        new ImageCacheWrapper(
           ['original', format],
           cache,
           new ImageOriginalVariant(format),
@@ -35,7 +35,7 @@ export class ImagesItemOriginalFUSEHandler extends DirectoryFUSETreeNode {
     this._children = [build('webp'), build('jpeg'), build('png')];
   }
 
-  children(): Promise<ObjectTreeNode[]> {
+  children(): Promise<IFUSETreeNode[]> {
     return Promise.resolve(this._children);
   }
 

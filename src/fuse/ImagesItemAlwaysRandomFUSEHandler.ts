@@ -1,23 +1,18 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
-import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
-import { BinaryStorage } from '../images/BinaryStorage';
+import { DirectoryFUSETreeNode, IFUSETreeNode } from './IFUSETreeNode';
 import { ImageMeta } from '../images/types';
 import { ImageVariantFUSEHandler } from './ImageVariantFUSEHandler';
-import { ImageOriginalVariant } from '../images/variants/ImageOriginalVariant';
-import { IImageVariant, ImageFormat } from '../images/variants/types';
-import { ICache } from '../cache/Cache';
-import { ObjectTreeNode } from '../objectTree';
-import { ImageCacheVariant } from '../images/variants/ImageCacheVariant';
+import { ImageFormat } from '../images/variants/types';
 import { ImageAlwaysRandomVariant } from '../images/variants/ImageAlwaysRandomVariant';
-import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
+import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
 
 export class ImagesItemAlwaysRandomFUSEHandler extends DirectoryFUSETreeNode {
-  private _children: FUSETreeNode[];
+  private _children: IFUSETreeNode[];
   name = 'always_random';
   constructor(
     private readonly imageMeta: ImageMeta,
-    private readonly imageBinaryResolver: ImageBinaryResolver,
+    private readonly imageBinaryResolver: ImageLoaderFacade,
   ) {
     super();
 
@@ -32,7 +27,7 @@ export class ImagesItemAlwaysRandomFUSEHandler extends DirectoryFUSETreeNode {
     this._children = [build('webp'), build('jpeg'), build('png')];
   }
 
-  children(): Promise<ObjectTreeNode[]> {
+  children(): Promise<IFUSETreeNode[]> {
     return Promise.resolve(this._children);
   }
 

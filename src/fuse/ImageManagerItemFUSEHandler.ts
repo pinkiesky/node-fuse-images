@@ -1,8 +1,8 @@
 import { Stats } from 'node-fuse-bindings';
-import { FileFUSETreeNode } from './FUSETreeNode';
-import { ImageMetaStorage } from '../images/ImageMetaStorage';
+import { FileFUSETreeNode } from './IFUSETreeNode';
 import { ImageMeta } from '../images/types';
-import { BinaryStorage } from '../images/BinaryStorage';
+import { IBinaryStorage } from '../binaryStorage/IBinaryStorage';
+import { IImageMetaStorage } from '../images/imageMeta/IImageMetaStorage';
 
 export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
   get name(): string {
@@ -10,8 +10,8 @@ export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
   }
 
   constructor(
-    private readonly imageMetaStorage: ImageMetaStorage,
-    private readonly imageBinaryStorage: BinaryStorage,
+    private readonly imageMetaStorage: IImageMetaStorage,
+    private readonly imageBinaryStorage: IBinaryStorage,
     private readonly imageMeta: ImageMeta,
   ) {
     super();
@@ -36,7 +36,7 @@ export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
     };
   }
 
-  async open(flags: number): Promise<void> {}
+  async checkAvailability(flags: number): Promise<void> {}
 
   async readAll(): Promise<Buffer> {
     const buff = await this.imageBinaryStorage.load(this.imageMeta.id);

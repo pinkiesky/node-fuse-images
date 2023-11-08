@@ -2,13 +2,13 @@ import { ObjectTreeNode } from '../objectTree';
 import { FUSEError } from './FUSEError';
 import { IFUSEHandler } from './IFUSEHandler';
 
-export interface FUSETreeNode extends ObjectTreeNode, IFUSEHandler {}
+export interface IFUSETreeNode extends ObjectTreeNode, IFUSEHandler {}
 
-export abstract class FileFUSETreeNode implements FUSETreeNode {
+export abstract class FileFUSETreeNode implements IFUSETreeNode {
   isLeaf = true;
   abstract name: string;
 
-  async children(): Promise<FUSETreeNode[]> {
+  async children(): Promise<IFUSETreeNode[]> {
     return [];
   }
 
@@ -16,21 +16,21 @@ export abstract class FileFUSETreeNode implements FUSETreeNode {
     throw FUSEError.notADirectory();
   }
 
-  abstract getattr(): Promise<any>;
-  abstract open(flags: number): Promise<void>;
+  abstract getattr(): any;
+  abstract checkAvailability(flags: number): Promise<void>;
   abstract readAll(): Promise<Buffer>;
   abstract remove(): Promise<void>;
   abstract writeAll(b: Buffer): Promise<void>;
 }
 
-export abstract class DirectoryFUSETreeNode implements FUSETreeNode {
+export abstract class DirectoryFUSETreeNode implements IFUSETreeNode {
   isLeaf = false;
   abstract name: string;
-  abstract children(): Promise<ObjectTreeNode[]>;
+  abstract children(): Promise<IFUSETreeNode[]>;
   abstract create(name: string, mode: number): Promise<void>;
-  abstract getattr(): Promise<any>;
+  abstract getattr(): any;
 
-  open(): Promise<void> {
+  checkAvailability(): Promise<void> {
     throw FUSEError.notAFile();
   }
 

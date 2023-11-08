@@ -1,48 +1,38 @@
 import * as fuse from 'node-fuse-bindings';
-import { PassThrough } from 'stream';
-import { streamToBuffer } from './utils/stream';
-import { FSImageMetaStorage } from './images/ImageMetaStorage';
-import { ObjectTreeNode } from './objectTree';
 import { FUSEFacade } from './fuse/FUSEFacade';
-import { type } from 'os';
 import { rootLogger } from './logger';
-import { InMemoryFileDescriptorStorage } from './fuse/fd/FileDescriptorStorage';
-import { FSImageBinaryStorage } from './images/BinaryStorage';
-import { ImageOriginalVariant } from './images/variants/ImageOriginalVariant';
-import { IImageVariant } from './images/variants/types';
-import { ImageCacheVariant } from './images/variants/ImageCacheVariant';
 import { InMemoryCache } from './cache/Cache';
-import { IFUSEHandler } from './fuse/IFUSEHandler';
 import { RootFUSEHandler } from './fuse/RootFUSEHandler';
-import { ImageManagerFUSEHandler } from './fuse/ImageManagerFUSEHandler';
 import { FUSEError } from './fuse/FUSEError';
-import { ImagesFUSEHandler } from './fuse/ImagesFUSEHandler';
-import { join } from 'path';
-import { ImageBinaryResolver } from './images/ImageBinaryResolver';
-import {
-  ImageGeneratorContainer,
-  PassThroughImageGenerator,
-  TextImageGenerator,
-} from './images/generator/IImageGenerator';
+import { ImageLoaderFacade } from './images/ImageLoaderFacade';
+import { ImageGeneratorComposite } from './images/generator/ImageGeneratorComposite';
+import { PassThroughImageGenerator } from './images/generator/PassThroughImageGenerator';
+import { TextImageGenerator } from './images/generator/TextImageGenerator';
+import { FSImageMetaStorage } from './images/imageMeta/FSImageMetaStorage';
+import { FSBinaryStorage } from './binaryStorage/FSBinaryStorage';
+import { IImageVariant } from './images/variants/IImageVariant';
+import { InMemoryFileDescriptorStorage } from './fuse/fd/InMemoryFileDescriptor';
 
 const mountPath = process.platform !== 'win32' ? './mnt' : 'M:\\';
 
 async function main() {
   const metaStorage = new FSImageMetaStorage('./devdata/images.json');
-  const binaryStorage = new FSImageBinaryStorage('./devdata/images');
-  const igc = new ImageGeneratorContainer();
+  const binaryStorage = new FSBinaryStorage('./devdata/images');
+  const igc = new ImageGeneratorComposite();
   igc.addGenerator(new PassThroughImageGenerator());
   igc.addGenerator(new TextImageGenerator());
 
-  const imageResolver = new ImageBinaryResolver(binaryStorage, igc);
+  const imageResolver = new ImageLoaderFacade(binaryStorage, igc);
   const imagesCache = new InMemoryCache<
     ReturnType<IImageVariant['generate']>
   >();
 
-  const rootNode = new RootFUSEHandler([
-    new ImageManagerFUSEHandler(metaStorage, binaryStorage),
-    new ImagesFUSEHandler(metaStorage, imageResolver, imagesCache),
-  ]);
+  const rootNode = new RootFUSEHandler(
+    metaStorage,
+    binaryStorage,
+    imageResolver,
+    imagesCache,
+  );
   const fuseFacade = new FUSEFacade(
     rootNode,
     new InMemoryFileDescriptorStorage(),

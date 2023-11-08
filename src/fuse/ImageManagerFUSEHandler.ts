@@ -1,23 +1,22 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
-import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
-import { ImageMetaStorage } from '../images/ImageMetaStorage';
+import { DirectoryFUSETreeNode, IFUSETreeNode } from './IFUSETreeNode';
 import { ImageManagerItemFUSEHandler } from './ImageManagerItemFUSEHandler';
-import { BinaryStorage } from '../images/BinaryStorage';
 import { FUSEMode } from './utils';
-import { getExtension } from '../utils/filenames';
+import { IImageMetaStorage } from '../images/imageMeta/IImageMetaStorage';
+import { IBinaryStorage } from '../binaryStorage/IBinaryStorage';
 
 export class ImageManagerFUSEHandler extends DirectoryFUSETreeNode {
   name = 'Image Manager';
 
   constructor(
-    private readonly imageMetaStorage: ImageMetaStorage,
-    private readonly imageBinaryStorage: BinaryStorage,
+    private readonly imageMetaStorage: IImageMetaStorage,
+    private readonly imageBinaryStorage: IBinaryStorage,
   ) {
     super();
   }
 
-  async children(): Promise<FUSETreeNode[]> {
+  async children(): Promise<IFUSETreeNode[]> {
     const list = await this.imageMetaStorage.list();
     return list.map(
       (meta) =>

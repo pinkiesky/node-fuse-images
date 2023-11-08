@@ -1,18 +1,11 @@
 import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
-import { ImageID, ImageMeta } from './types';
-import { removeExtension } from '../utils/filenames';
-import { filenameToMimeType } from '../utils/mimeType';
+import { ImageMeta } from '../types';
+import { removeExtension } from '../../utils/filenames';
+import { filenameToMimeType } from '../../utils/mimeType';
+import { IImageMetaStorage } from './IImageMetaStorage';
 
-export interface ImageMetaStorage {
-  list(): Promise<ImageMeta[]>;
-
-  get(name: ImageID): Promise<ImageMeta | null>;
-  create(name: ImageID): Promise<ImageMeta>;
-  remove(name: ImageID): Promise<boolean>;
-}
-
-export class FSImageMetaStorage implements ImageMetaStorage {
+export class FSImageMetaStorage implements IImageMetaStorage {
   private readonly cache: Map<string, ImageMeta> = new Map();
   private isCacheHydrated = false;
 

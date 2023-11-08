@@ -1,6 +1,7 @@
 import { randInt } from '../../utils/math';
 import { Image, ImageBinary } from '../types';
-import { IImageVariant, ImageFormat } from './types';
+import { IImageVariant } from './IImageVariant';
+import { ImageFormat } from './types';
 import sharp from 'sharp';
 
 export class ImageAlwaysRandomVariant implements IImageVariant {

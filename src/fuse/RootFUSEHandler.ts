@@ -1,11 +1,31 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
-import { FUSETreeNode } from './FUSETreeNode';
+import { IFUSETreeNode } from './IFUSETreeNode';
+import { ImagesFUSEHandler } from './ImagesFUSEHandler';
+import { ImageManagerFUSEHandler } from './ImageManagerFUSEHandler';
+import { IImageMetaStorage } from '../images/imageMeta/IImageMetaStorage';
+import { IBinaryStorage } from '../binaryStorage/IBinaryStorage';
+import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
+import { ICache } from '../cache/Cache';
+import { ImageBinary } from '../images/types';
 
-export class RootFUSEHandler implements FUSETreeNode {
+export class RootFUSEHandler implements IFUSETreeNode {
   isLeaf = false;
   name = 'Root Node';
-  constructor(private readonly _children: FUSETreeNode[]) {}
+
+  private _children;
+
+  constructor(
+    metaStorage: IImageMetaStorage,
+    binaryStorage: IBinaryStorage,
+    imageResolver: ImageLoaderFacade,
+    cache: ICache<Promise<ImageBinary>>,
+  ) {
+    this._children = [
+      new ImageManagerFUSEHandler(metaStorage, binaryStorage),
+      new ImagesFUSEHandler(metaStorage, imageResolver, cache),
+    ];
+  }
 
   async children() {
     return this._children;
@@ -29,7 +49,7 @@ export class RootFUSEHandler implements FUSETreeNode {
     };
   }
 
-  open(flags: number): Promise<void> {
+  checkAvailability(flags: number): Promise<void> {
     throw FUSEError.accessDenied();
   }
 

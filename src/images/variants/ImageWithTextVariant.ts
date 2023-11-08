@@ -1,11 +1,8 @@
 import { Image, ImageBinary } from '../types';
-import { IImageVariant, ImageFormat } from './types';
+import { ImageFormat } from './types';
 import sharp from 'sharp';
-import { createCanvas, loadImage } from 'canvas';
-import { streamToBuffer } from '../../utils/stream';
-import { PassThrough } from 'stream';
-import { promisify } from 'util';
 import { loadImageFromBuffer } from '../../utils/canvas';
+import { IImageVariant } from './IImageVariant';
 
 const TEXT_SIZE_PX = 30;
 const TEXT_MARGIN_LEFT_PX = 5;

@@ -1,6 +1,6 @@
-import { FileDescriptorStorage } from './fd/FileDescriptorStorage';
+import { IFileDescriptorStorage } from './fd/FileDescriptorStorage';
 import { FUSEError } from './FUSEError';
-import { FUSETreeNode } from './FUSETreeNode';
+import { IFUSETreeNode } from './IFUSETreeNode';
 import { rootLogger } from '../logger';
 import { defaultPathResolver } from '../objectTree';
 import * as fuse from 'node-fuse-bindings';
@@ -9,8 +9,8 @@ export class FUSEFacade {
   private logger = rootLogger.getLogger(this.constructor.name);
 
   constructor(
-    private readonly rootNode: FUSETreeNode,
-    private readonly fdStorage: FileDescriptorStorage,
+    private readonly rootNode: IFUSETreeNode,
+    private readonly fdStorage: IFileDescriptorStorage,
   ) {}
 
   private splitPath(path: string): string[] {
@@ -23,12 +23,12 @@ export class FUSEFacade {
     const dirs = this.splitPath(path);
     const name = dirs.pop()!;
 
-    const node = await this.safeGetNode('/' + dirs.join('/'));
+    const node = await this.safeGetNode(dirs);
 
     await node.create(name, mode);
-    const fd = this.fdStorage.openWO();
+    const fdObject = this.fdStorage.openWO();
 
-    return fd.fd;
+    return fdObject.fd;
   }
 
   async getattr(path: string): Promise<fuse.Stats> {
@@ -37,7 +37,7 @@ export class FUSEFacade {
   }
 
   async open(path: string, flags: number): Promise<number> {
-    this.logger.info(`open(${path})`);
+    this.logger.info(`open(${path}, ${flags})`);
 
     const node = await this.safeGetNode(path);
 
@@ -45,11 +45,12 @@ export class FUSEFacade {
       throw new FUSEError(fuse.EACCES, 'invalid path');
     }
 
-    // check availability
-    await node.open(flags);
+    await node.checkAvailability(flags);
 
-    const fd = this.fdStorage.openRO(await node.readAll());
-    return fd.fd;
+    const fileData: Buffer = await node.readAll();
+    const fdObject = this.fdStorage.openRO(fileData);
+
+    return fdObject.fd;
   }
 
   async read(
@@ -105,14 +106,18 @@ export class FUSEFacade {
     return 0;
   }
 
-  async safeGetNode(path: string): Promise<FUSETreeNode> {
-    const node = await defaultPathResolver(this.rootNode, this.splitPath(path));
-    if (!node) {
-      throw new FUSEError(fuse.ENOENT, 'not found');
-    }
+   async safeGetNode(path: string | string[]): Promise<IFUSETreeNode> {
+      if (typeof path === 'string') {
+        path = this.splitPath(path);
+      }
 
-    return node;
-  }
+      const node = await defaultPathResolver(this.rootNode, path);
+      if (!node) {
+        throw new FUSEError(fuse.ENOENT, 'not found');
+      }
+
+      return node;
+    }
 
   async unlink(path: string): Promise<0> {
     this.logger.info(`unlink(${path})`);

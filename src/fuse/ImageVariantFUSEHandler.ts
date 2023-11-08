@@ -1,9 +1,9 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
-import { FileFUSETreeNode } from './FUSETreeNode';
-import { IImageVariant } from '../images/variants/types';
+import { FileFUSETreeNode } from './IFUSETreeNode';
 import { ImageMeta } from '../images/types';
-import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
+import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
+import { IImageVariant } from '../images/variants/IImageVariant';
 
 export class ImageVariantFUSEHandler extends FileFUSETreeNode {
   private bufferedImage: Promise<Buffer> | null = null;
@@ -15,7 +15,7 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
   constructor(
     private readonly imagePostfix: string,
     private readonly imageMeta: ImageMeta,
-    private readonly imageBinaryResolver: ImageBinaryResolver,
+    private readonly imageBinaryResolver: ImageLoaderFacade,
     private readonly imageVariant: IImageVariant,
   ) {
     super();
@@ -69,7 +69,7 @@ export class ImageVariantFUSEHandler extends FileFUSETreeNode {
     };
   }
 
-  async open(flags: number): Promise<void> {}
+  async checkAvailability(flags: number): Promise<void> {}
 
   async readAll(): Promise<Buffer> {
     return this.getVariantBuffer(true);

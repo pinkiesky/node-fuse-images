@@ -1,26 +1,27 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
-import { DirectoryFUSETreeNode, FUSETreeNode } from './FUSETreeNode';
-import { ImageMetaStorage } from '../images/ImageMetaStorage';
+import { DirectoryFUSETreeNode, IFUSETreeNode } from './IFUSETreeNode';
 import { ImagesItemFUSEHandler } from './ImagesItemFUSEHandler';
 import { ICache } from '../cache/Cache';
-import { IImageVariant } from '../images/variants/types';
 import { FUSEMode } from './utils';
-import { ImageBinaryResolver } from '../images/ImageBinaryResolver';
+import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
+import { IImageVariant } from '../images/variants/IImageVariant';
+import { IImageMetaStorage } from '../images/imageMeta/IImageMetaStorage';
 
 export class ImagesFUSEHandler extends DirectoryFUSETreeNode {
-  private _childer: FUSETreeNode[] = [];
+  private _childer: IFUSETreeNode[] = [];
   private previousChildrenIds: string[] = [];
   name = 'Images';
+
   constructor(
-    private readonly imageMetaStorage: ImageMetaStorage,
-    private readonly imageBinaryResolver: ImageBinaryResolver,
+    private readonly imageMetaStorage: IImageMetaStorage,
+    private readonly imageBinaryResolver: ImageLoaderFacade,
     private cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
     super();
   }
 
-  async children(): Promise<FUSETreeNode[]> {
+  async children(): Promise<IFUSETreeNode[]> {
     const list = await this.imageMetaStorage.list();
     const childrenIds = list.map((meta) => meta.id);
 

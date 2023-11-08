@@ -1,13 +1,8 @@
 import { join } from 'path';
 import { promises as fs } from 'fs';
+import { IBinaryStorage } from './IBinaryStorage';
 
-export interface BinaryStorage {
-  load(id: string): Promise<Buffer | null>;
-  write(id: string, binary: Buffer): Promise<void>;
-  remove(id: string): Promise<void>;
-}
-
-export class FSImageBinaryStorage implements BinaryStorage {
+export class FSBinaryStorage implements IBinaryStorage {
   constructor(private readonly mountPath: string) {}
 
   private getPath(id: string): string {
