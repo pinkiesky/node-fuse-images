@@ -7,4 +7,3 @@ export interface IFileDescriptor {
   readToBuffer(buffer: Buffer, len: number, pos: number): number;
   writeToBuffer(buffer: Buffer, length: number, offset: number): number;
 }
-

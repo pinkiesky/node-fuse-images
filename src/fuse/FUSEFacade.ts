@@ -106,18 +106,18 @@ export class FUSEFacade {
     return 0;
   }
 
-   async safeGetNode(path: string | string[]): Promise<IFUSETreeNode> {
-      if (typeof path === 'string') {
-        path = this.splitPath(path);
-      }
-
-      const node = await defaultPathResolver(this.rootNode, path);
-      if (!node) {
-        throw new FUSEError(fuse.ENOENT, 'not found');
-      }
-
-      return node;
+  async safeGetNode(path: string | string[]): Promise<IFUSETreeNode> {
+    if (typeof path === 'string') {
+      path = this.splitPath(path);
     }
+
+    const node = await defaultPathResolver(this.rootNode, path);
+    if (!node) {
+      throw new FUSEError(fuse.ENOENT, 'not found');
+    }
+
+    return node;
+  }
 
   async unlink(path: string): Promise<0> {
     this.logger.info(`unlink(${path})`);

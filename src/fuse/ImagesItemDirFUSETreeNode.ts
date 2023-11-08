@@ -2,15 +2,15 @@ import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { DirectoryFUSETreeNode, IFUSETreeNode } from './IFUSETreeNode';
 import { ImageMeta } from '../images/types';
-import { ImagesItemOriginalFUSEHandler } from './ImagesItemOriginalFUSEHandler';
+import { ImagesItemOriginalDirFUSETreeNode } from './ImagesItemOriginalDirFUSETreeNode';
 import { ICache } from '../cache/Cache';
-import { ImagesItemAlwaysRandomFUSEHandler } from './ImagesItemAlwaysRandomFUSEHandler';
-import { ImagesItemCounterFUSEHandler } from './ImagesItemCounterFUSEHandler';
+import { ImagesItemAlwaysRandomDirFUSETreeNode } from './ImagesItemAlwaysRandomDirFUSETreeNode';
+import { ImagesItemCounterDirFUSETreeNode } from './ImagesItemCounterDirFUSETreeNode';
 import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
 import { IImageVariant } from '../images/variants/IImageVariant';
 import { IImageMetaStorage } from '../images/imageMeta/IImageMetaStorage';
 
-export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
+export class ImagesItemDirFUSETreeNode extends DirectoryFUSETreeNode {
   private readonly _children: IFUSETreeNode[];
 
   get name(): string {
@@ -26,30 +26,30 @@ export class ImagesItemFUSEHandler extends DirectoryFUSETreeNode {
     super();
 
     this._children = [
-      new ImagesItemOriginalFUSEHandler(
+      new ImagesItemOriginalDirFUSETreeNode(
         this.imageMeta,
         this.imageBinaryResolver,
         this.cache,
       ),
-      new ImagesItemAlwaysRandomFUSEHandler(
+      new ImagesItemAlwaysRandomDirFUSETreeNode(
         this.imageMeta,
         this.imageBinaryResolver,
       ),
-      new ImagesItemCounterFUSEHandler(
+      new ImagesItemCounterDirFUSETreeNode(
         'webp',
         10,
         this.imageMeta,
         this.imageBinaryResolver,
         this.cache,
       ),
-      new ImagesItemCounterFUSEHandler(
+      new ImagesItemCounterDirFUSETreeNode(
         'jpg',
         10,
         this.imageMeta,
         this.imageBinaryResolver,
         this.cache,
       ),
-      new ImagesItemCounterFUSEHandler(
+      new ImagesItemCounterDirFUSETreeNode(
         'png',
         10,
         this.imageMeta,

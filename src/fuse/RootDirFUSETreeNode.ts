@@ -1,15 +1,15 @@
 import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
-import { IFUSETreeNode } from './IFUSETreeNode';
-import { ImagesFUSEHandler } from './ImagesFUSEHandler';
-import { ImageManagerFUSEHandler } from './ImageManagerFUSEHandler';
+import { DirectoryFUSETreeNode } from './IFUSETreeNode';
+import { ImagesDirFUSETreeNode } from './ImagesDirFUSETreeNode';
+import { ImageManagerDirFUSETreeNode } from './ImageManagerDirFUSETreeNode';
 import { IImageMetaStorage } from '../images/imageMeta/IImageMetaStorage';
 import { IBinaryStorage } from '../binaryStorage/IBinaryStorage';
 import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
 import { ICache } from '../cache/Cache';
 import { ImageBinary } from '../images/types';
 
-export class RootFUSEHandler implements IFUSETreeNode {
+export class RootDirFUSETreeNode extends DirectoryFUSETreeNode {
   isLeaf = false;
   name = 'Root Node';
 
@@ -21,9 +21,11 @@ export class RootFUSEHandler implements IFUSETreeNode {
     imageResolver: ImageLoaderFacade,
     cache: ICache<Promise<ImageBinary>>,
   ) {
+    super();
+
     this._children = [
-      new ImageManagerFUSEHandler(metaStorage, binaryStorage),
-      new ImagesFUSEHandler(metaStorage, imageResolver, cache),
+      new ImageManagerDirFUSETreeNode(metaStorage, binaryStorage),
+      new ImagesDirFUSETreeNode(metaStorage, imageResolver, cache),
     ];
   }
 
@@ -49,19 +51,11 @@ export class RootFUSEHandler implements IFUSETreeNode {
     };
   }
 
-  checkAvailability(flags: number): Promise<void> {
-    throw FUSEError.accessDenied();
-  }
-
   readAll(): Promise<Buffer> {
     throw FUSEError.accessDenied();
   }
 
   remove(): Promise<void> {
-    throw FUSEError.accessDenied();
-  }
-
-  writeAll(b: Buffer): Promise<void> {
     throw FUSEError.accessDenied();
   }
 }

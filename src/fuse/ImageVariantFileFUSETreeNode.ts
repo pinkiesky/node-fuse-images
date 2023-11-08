@@ -5,7 +5,7 @@ import { ImageMeta } from '../images/types';
 import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
 import { IImageVariant } from '../images/variants/IImageVariant';
 
-export class ImageVariantFUSEHandler extends FileFUSETreeNode {
+export class ImageVariantFileFUSETreeNode extends FileFUSETreeNode {
   private bufferedImage: Promise<Buffer> | null = null;
 
   get name(): string {

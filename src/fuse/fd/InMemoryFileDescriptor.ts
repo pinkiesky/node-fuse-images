@@ -75,10 +75,7 @@ export class ReadFileDescriptor extends ReadWriteFileDescriptor {
     return this.binary.length;
   }
 
-  constructor(
-    fd: number,
-    binary: Buffer,
-  ) {
+  constructor(fd: number, binary: Buffer) {
     super(fd, binary);
   }
 

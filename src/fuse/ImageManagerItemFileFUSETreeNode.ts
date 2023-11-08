@@ -4,7 +4,7 @@ import { ImageMeta } from '../images/types';
 import { IBinaryStorage } from '../binaryStorage/IBinaryStorage';
 import { IImageMetaStorage } from '../images/imageMeta/IImageMetaStorage';
 
-export class ImageManagerItemFUSEHandler extends FileFUSETreeNode {
+export class ImageManagerItemFileFUSETreeNode extends FileFUSETreeNode {
   get name(): string {
     return this.imageMeta.originalFileName;
   }

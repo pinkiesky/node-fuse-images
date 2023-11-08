@@ -2,7 +2,7 @@ import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { DirectoryFUSETreeNode, IFUSETreeNode } from './IFUSETreeNode';
 import { ImageMeta } from '../images/types';
-import { ImageVariantFUSEHandler } from './ImageVariantFUSEHandler';
+import { ImageVariantFileFUSETreeNode } from './ImageVariantFileFUSETreeNode';
 import { ImageFormat } from '../images/variants/types';
 import { ICache } from '../cache/Cache';
 import { ImageCacheWrapper } from '../images/variants/ImageCacheWrapper';
@@ -10,7 +10,7 @@ import { ImageWithTextVariant } from '../images/variants/ImageWithTextVariant';
 import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
 import { IImageVariant } from '../images/variants/IImageVariant';
 
-export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
+export class ImagesItemCounterDirFUSETreeNode extends DirectoryFUSETreeNode {
   private _children: IFUSETreeNode[];
 
   get name(): string {
@@ -27,7 +27,7 @@ export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
     super();
 
     const build = (text: string) =>
-      new ImageVariantFUSEHandler(
+      new ImageVariantFileFUSETreeNode(
         `_${text}.${outputFormat}`,
         this.imageMeta,
         this.imageBinaryStorage,
@@ -63,7 +63,7 @@ export class ImagesItemCounterFUSEHandler extends DirectoryFUSETreeNode {
     };
   }
 
-  remove():Promise< void> {
+  remove(): Promise<void> {
     throw FUSEError.accessDenied();
   }
 }

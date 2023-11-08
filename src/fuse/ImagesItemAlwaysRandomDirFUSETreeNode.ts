@@ -2,34 +2,26 @@ import { Stats } from 'node-fuse-bindings';
 import { FUSEError } from './FUSEError';
 import { DirectoryFUSETreeNode, IFUSETreeNode } from './IFUSETreeNode';
 import { ImageMeta } from '../images/types';
-import { ImageVariantFUSEHandler } from './ImageVariantFUSEHandler';
-import { ImageOriginalVariant } from '../images/variants/ImageOriginalVariant';
+import { ImageVariantFileFUSETreeNode } from './ImageVariantFileFUSETreeNode';
 import { ImageFormat } from '../images/variants/types';
-import { ICache } from '../cache/Cache';
-import { ImageCacheWrapper } from '../images/variants/ImageCacheWrapper';
+import { ImageAlwaysRandomVariant } from '../images/variants/ImageAlwaysRandomVariant';
 import { ImageLoaderFacade } from '../images/ImageLoaderFacade';
-import { IImageVariant } from '../images/variants/IImageVariant';
 
-export class ImagesItemOriginalFUSEHandler extends DirectoryFUSETreeNode {
+export class ImagesItemAlwaysRandomDirFUSETreeNode extends DirectoryFUSETreeNode {
   private _children: IFUSETreeNode[];
-  name = 'original';
+  name = 'always_random';
   constructor(
     private readonly imageMeta: ImageMeta,
     private readonly imageBinaryResolver: ImageLoaderFacade,
-    cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
     super();
 
     const build = (format: ImageFormat) =>
-      new ImageVariantFUSEHandler(
+      new ImageVariantFileFUSETreeNode(
         `.${format}`,
         this.imageMeta,
         this.imageBinaryResolver,
-        new ImageCacheWrapper(
-          ['original', format],
-          cache,
-          new ImageOriginalVariant(format),
-        ),
+        new ImageAlwaysRandomVariant(format),
       );
 
     this._children = [build('webp'), build('jpeg'), build('png')];

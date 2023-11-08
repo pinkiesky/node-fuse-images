@@ -1,6 +1,4 @@
-import {
-  IFileDescriptor,
-} from './FileDescriptor';
+import { IFileDescriptor } from './FileDescriptor';
 
 export interface IFileDescriptorStorage {
   openRO(b: Buffer): IFileDescriptor;
@@ -9,4 +7,3 @@ export interface IFileDescriptorStorage {
   get(fd: number): IFileDescriptor | null;
   release(fd: number): void;
 }
-
