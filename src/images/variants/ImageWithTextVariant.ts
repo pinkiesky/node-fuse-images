@@ -4,7 +4,9 @@ import sharp from 'sharp';
 import { loadImageFromBuffer } from '../../utils/canvas';
 import { IImageVariant } from './IImageVariant';
 
-const TEXT_SIZE_PX = 30;
+const MIN_TEXT_SIZE_PX = 15;
+const TEXT_SIZE_PERCENT = 0.2;
+
 const TEXT_MARGIN_LEFT_PX = 5;
 
 export class ImageWithTextVariant implements IImageVariant {
@@ -20,8 +22,13 @@ export class ImageWithTextVariant implements IImageVariant {
 
     ctx.strokeStyle = 'white';
     ctx.fillStyle = 'black';
-    ctx.font = `${TEXT_SIZE_PX}px Open Sans`;
-    ctx.translate(TEXT_MARGIN_LEFT_PX, TEXT_SIZE_PX);
+
+    const textSizePx = Math.max(
+      canvas.height * TEXT_SIZE_PERCENT,
+      MIN_TEXT_SIZE_PX,
+    );
+    ctx.font = `${textSizePx}px Open Sans`;
+    ctx.translate(TEXT_MARGIN_LEFT_PX, textSizePx);
     ctx.fillText(this.text, 0, 0);
     ctx.strokeText(this.text, 0, 0);
 

@@ -14,31 +14,36 @@ export class ImagesItemCounterDirFUSETreeNode extends DirectoryFUSETreeNode {
   private _children: IFUSETreeNode[];
 
   get name(): string {
-    return `counter to ${this.upperLimit} (${this.outputFormat})`;
+    return `counter to ${this.upperLimit}`;
   }
 
   constructor(
-    private readonly outputFormat: ImageFormat,
     private readonly upperLimit: number,
     private readonly imageMeta: ImageMeta,
     private readonly imageBinaryStorage: ImageLoaderFacade,
     cache: ICache<ReturnType<IImageVariant['generate']>>,
   ) {
     super();
+    const formats = ['jpg', 'png', 'webp'] as ImageFormat[];
 
-    const build = (text: string) =>
+    const build = (text: string, format: ImageFormat) =>
       new ImageVariantFileFUSETreeNode(
-        `_${text}.${outputFormat}`,
+        `_${text}.${format}`,
         this.imageMeta,
         this.imageBinaryStorage,
         new ImageCacheWrapper(
-          ['counter', text, outputFormat],
+          ['counter', text, format],
           cache,
-          new ImageWithTextVariant(outputFormat, text),
+          new ImageWithTextVariant(format, text),
         ),
       );
 
-    this._children = new Array(upperLimit).fill(0).map((_, i) => build(`${i}`));
+    this._children = [];
+    for (let i = 0; i < this.upperLimit; i++) {
+      for (const format of formats) {
+        this._children.push(build(i.toString(), format));
+      }
+    }
   }
 
   children(): Promise<IFUSETreeNode[]> {

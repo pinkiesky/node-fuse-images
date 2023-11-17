@@ -36,21 +36,6 @@ export class ImagesItemDirFUSETreeNode extends DirectoryFUSETreeNode {
         this.imageBinaryResolver,
       ),
       new ImagesItemCounterDirFUSETreeNode(
-        'webp',
-        10,
-        this.imageMeta,
-        this.imageBinaryResolver,
-        this.cache,
-      ),
-      new ImagesItemCounterDirFUSETreeNode(
-        'jpg',
-        10,
-        this.imageMeta,
-        this.imageBinaryResolver,
-        this.cache,
-      ),
-      new ImagesItemCounterDirFUSETreeNode(
-        'png',
         10,
         this.imageMeta,
         this.imageBinaryResolver,
