@@ -20,7 +20,6 @@ export function getMimeTypeSubtype(mimeType: MimeType) {
 
 export function filenameToMimeType(filename: string): MimeType | null {
   const extension = getExtension(filename);
-  console.log(filename, extension);
   return extensionToMimeType(extension);
 }
 

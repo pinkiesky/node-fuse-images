@@ -20,15 +20,7 @@ export class Logger {
     private logLevel: LogLevel = LogLevel.INFO,
   ) {}
 
-  private debug(message: string): void {
-    this.log(LogLevel.DEBUG, message);
-  }
-
-  private error(message: string): void {
-    this.log(LogLevel.ERROR, message);
-  }
-
-  private log(level: LogLevel, message: string): void {
+  log(level: LogLevel, message: string): void {
     if (level < this.logLevel) {
       return;
     }
@@ -50,6 +42,14 @@ export class Logger {
 
   warn(message: string): void {
     this.log(LogLevel.WARN, message);
+  }
+
+  debug(message: string): void {
+    this.log(LogLevel.DEBUG, message);
+  }
+
+  error(message: string): void {
+    this.log(LogLevel.ERROR, message);
   }
 }
 

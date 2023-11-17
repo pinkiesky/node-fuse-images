@@ -2,7 +2,7 @@ import * as fuse from 'node-fuse-bindings';
 import { FUSEFacade } from './fuse/FUSEFacade';
 import { rootLogger } from './logger';
 import { InMemoryCache } from './cache/Cache';
-import { RootFUSEHandler } from './fuse/RootFUSEHandler';
+import { RootDirFUSETreeNode } from './fuse/RootDirFUSETreeNode';
 import { FUSEError } from './fuse/FUSEError';
 import { ImageLoaderFacade } from './images/ImageLoaderFacade';
 import { ImageGeneratorComposite } from './images/generator/ImageGeneratorComposite';
@@ -13,7 +13,8 @@ import { FSBinaryStorage } from './binaryStorage/FSBinaryStorage';
 import { IImageVariant } from './images/variants/IImageVariant';
 import { InMemoryFileDescriptorStorage } from './fuse/fd/InMemoryFileDescriptor';
 
-const mountPath = process.platform !== 'win32' ? './mnt' : 'M:\\';
+const defaultMountPath = process.platform !== 'win32' ? './mnt' : 'M:\\';
+const mountPath = process.env.MOUNT_PATH || defaultMountPath;
 
 async function main() {
   const metaStorage = new FSImageMetaStorage('./devdata/images.json');
@@ -27,7 +28,7 @@ async function main() {
     ReturnType<IImageVariant['generate']>
   >();
 
-  const rootNode = new RootFUSEHandler(
+  const rootNode = new RootDirFUSETreeNode(
     metaStorage,
     binaryStorage,
     imageResolver,
@@ -53,7 +54,7 @@ async function main() {
           return cb(err.code, null as T);
         }
 
-        console.error(err);
+        fuseLogger.error(err);
         cb(fuse.EIO, null as T);
       });
   };
@@ -69,14 +70,14 @@ async function main() {
           return cb(err.code);
         }
 
-        console.error(err);
+        fuseLogger.error(err);
         cb(fuse.EIO);
       });
   };
 
   process.on('SIGINT', () => {
     fuse.unmount(mountPath, () => {
-      console.log('filesystem unmounted');
+      fuseLogger.info('filesystem unmounted');
       process.exit();
     });
   });
@@ -113,15 +114,15 @@ async function main() {
         handleResultWrapper(fuseFacade.unlink(path), cb);
       },
       truncate(path, size, cb) {
-        console.log('truncate', path, size);
+        fuseLogger.warn('unhandled truncate call');
         return cb(0);
       },
       flush(path, fd, cb) {
-        console.log('flush', path, fd);
+        fuseLogger.warn('unhandled flush call');
         return cb(0);
       },
       rename(src, dest, cb) {
-        console.log('rename', src, dest);
+        fuseLogger.warn('unhandled rename call');
         return cb(0);
       },
     },

@@ -4,13 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write \"**/*.ts\"",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "tsx ./src/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
     "canvas": "^2.11.2",
     "colors": "^1.4.0",

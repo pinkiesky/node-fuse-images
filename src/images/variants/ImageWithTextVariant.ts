@@ -14,7 +14,6 @@ export class ImageWithTextVariant implements IImageVariant {
   ) {}
 
   async generate(image: Image): Promise<ImageBinary> {
-    console.log('data?');
     const sharpImage = sharp(image.binary.buffer).png();
     const canvas = await loadImageFromBuffer(await sharpImage.toBuffer());
     const ctx = canvas.getContext('2d');

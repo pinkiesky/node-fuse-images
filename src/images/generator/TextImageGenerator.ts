@@ -22,7 +22,6 @@ export class TextImageGenerator implements IImageGenerator {
     }
 
     const imageText = rawBuffer.toString('utf-8');
-    console.log(imageText);
 
     const canvas = createCanvas(imageSize.width, imageSize.height);
     const ctx = canvas.getContext('2d');
