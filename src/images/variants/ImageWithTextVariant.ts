@@ -21,6 +21,8 @@ export class ImageWithTextVariant implements IImageVariant {
     const ctx = canvas.getContext('2d');
 
     ctx.strokeStyle = 'white';
+    ctx.lineWidth = 3;
+
     ctx.fillStyle = 'black';
 
     const textSizePx = Math.max(
